@@ -120,7 +120,7 @@ h1,h2,h3,h4{margin:0;text-wrap:balance} p{margin:0}
 .xr .s{font-size:.78rem;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* 右：這一步 */
-.flow{display:grid;grid-template-rows:auto auto auto auto minmax(0,1fr) auto;gap:.45rem;min-height:0;border-top:.45rem solid var(--blue)}
+.flow{display:grid;grid-template-rows:auto auto auto auto minmax(0,1fr) auto;gap:.35rem;min-height:0;border-top:.45rem solid var(--blue)}
 .loop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.25rem}
 .loop span{font-size:.8rem;text-align:center;border-radius:.45rem;padding:.2rem .1rem;background:var(--soft);color:var(--mute);border:1.5px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .loop span.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:900}
@@ -134,16 +134,16 @@ h1,h2,h3,h4{margin:0;text-wrap:balance} p{margin:0}
 .beats span{cursor:pointer}
 .beats span.miss{background:#fff1f0;border-color:var(--red);color:var(--red);font-weight:700;animation:flash 1.2s infinite}
 .beats span.now{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
-.body{min-height:0;overflow:auto;display:grid;gap:.55rem;align-content:start}
+.body{min-height:0;overflow:auto;display:grid;gap:.4rem;align-content:start}
 .story{font-family:var(--fs);font-size:1.15rem;line-height:1.75;white-space:pre-wrap}
 .typing::after{content:"▍";color:var(--blue);animation:flash 1s infinite}
-.focus{border-radius:.9rem;border:3px solid var(--yellow);background:var(--yellow-l);padding:.7rem .8rem;display:grid;gap:.55rem}
+.focus{border-radius:.9rem;border:3px solid var(--yellow);background:var(--yellow-l);padding:.5rem .7rem;display:grid;gap:.4rem}
 .focus .ask{font-size:1.2rem;font-weight:900;line-height:1.35}
 .focus .tag{font-weight:900;color:#8a5d00;font-size:.92rem}
-.opts{display:grid;gap:.45rem}
+.opts{display:grid;gap:.35rem}
 .opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.opt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.6rem;align-items:center;text-align:left;padding:.55rem .7rem;border-radius:.75rem;border:2.5px solid var(--line);background:#fff}
-.opt .k{width:1.9rem;height:1.9rem;border-radius:.5rem;display:grid;place-items:center;background:var(--soft);font-family:var(--fn);font-weight:600}
+.opt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.5rem;align-items:center;text-align:left;padding:.35rem .6rem;border-radius:.75rem;border:2.5px solid var(--line);background:#fff}
+.opt .k{width:1.6rem;height:1.6rem;border-radius:.5rem;display:grid;place-items:center;background:var(--soft);font-family:var(--fn);font-weight:600}
 .opt .t b{display:block;font-size:1.05rem} .opt .t span{font-size:.86rem;color:var(--ink2)}
 .opt.sel{border-color:var(--green);background:var(--green-l)} .opt.sel .k{background:var(--green);color:#fff}
 .task{border-radius:.8rem;border:2px solid var(--tech);background:#e8f6fa;padding:.6rem .75rem;display:grid;gap:.35rem}
@@ -155,7 +155,7 @@ h1,h2,h3,h4{margin:0;text-wrap:balance} p{margin:0}
 .tags{display:flex;gap:.3rem;flex-wrap:wrap}
 .tg{border-radius:999px;padding:.12em .7em;font-size:.86rem;border:1.5px solid var(--line);background:#fff}
 .tg.on{border-color:var(--orange);color:var(--orange);background:var(--orange-l);font-weight:700}
-.injbar{border-radius:.8rem;border:2.5px solid var(--orange);background:var(--orange-l);padding:.45rem .65rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.injbar{border-radius:.8rem;border:2.5px solid var(--orange);background:var(--orange-l);padding:.25rem .6rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
 .injbar b{color:var(--orange)}
 .foot{display:flex;gap:.5rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .todo{font-size:.9rem;color:var(--red);font-weight:700}
@@ -234,7 +234,7 @@ td input{padding:.2em .4em;font-size:.8rem}
 @keyframes zap{to{transform:none}}
 .coach{position:fixed;z-index:65;background:#fff;border-radius:.9rem;padding:.8rem 1rem;width:min(26rem,92vw);box-shadow:0 12px 40px rgba(0,0,0,.3);display:grid;gap:.5rem;border-top:.4rem solid var(--green)}
 .bottom::after{content:"";position:absolute;left:0;right:0;bottom:0;height:.45rem;background:var(--green)}
-.goal{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;border-radius:.7rem;padding:.35rem .65rem;background:var(--blue-l);border:2px solid var(--blue);font-size:.95rem}
+.goal{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;border-radius:.7rem;padding:.2rem .6rem;background:var(--blue-l);border:2px solid var(--blue);font-size:.95rem}
 .goal b{color:var(--blue-d)} .goal .ok{color:var(--green-d);font-weight:900} .goal .no{color:var(--red);font-weight:900}
 .four{display:grid;gap:.4rem} .four .cat{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:.4rem;align-items:start}
 .four .cat>b{font-size:.95rem;color:var(--soc);padding-top:.25rem}
@@ -248,6 +248,12 @@ td input{padding:.2em .4em;font-size:.8rem}
 .addopt{display:inline-flex;gap:.3rem;align-items:center}
 .addopt input{width:12.5rem;padding:.3em .8em;border:2px dashed var(--blue);border-radius:999px;background:#f7fbff}
 .addopt button{display:none}
+.rewind{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;border-radius:.7rem;padding:.4rem .65rem;background:#efe9ff;border:2.5px solid var(--gov);font-weight:700;font-size:.95rem}
+.hcrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:.4rem;align-items:center;background:#fff;border-radius:.6rem;padding:.35rem .55rem}
+.hcrow b.n{font-family:var(--fn);font-size:1.5rem;min-width:2.6em;text-align:center}
+.fb{display:grid;gap:.25rem;background:#fff;border-radius:.6rem;padding:.4rem .6rem;font-size:.92rem}
+.tray.focusring{outline:4px solid var(--yellow);outline-offset:3px;border-radius:.9rem}
+.tools-sec{border-top:1px solid var(--line);padding-top:.5rem}
 .spot{position:fixed;z-index:60;border-radius:1rem;box-shadow:0 0 0 9999px rgba(10,20,30,.62);pointer-events:none}
 
 /* 窄螢幕（平板直放、手機）：改為上下排，可捲動 */
@@ -310,12 +316,12 @@ const FOUR_EX={ "走不出家門的人":["無電梯老公寓高樓層住戶","�
 const FOUR=Object.keys(FOUR_EX);
 const FIND=["主動逐戶探視","不需出示身分或戶籍證明","名單由誰保管、誰能查閱、用完怎麼處理"];
 const STAGE_GOAL="第一階段目標：撐到 06:00 日出（綠燈），並接住最多維生需求";
-const GOALS={ open:"認識角色與流程", blackout:"看懂門市如何自動孤島運轉；社會組說出斷電後前 30 分鐘先做什麼", "1A":"降載並規劃外部電源，讓維持時數拉長", ups:"決定要不要斷開雲端連線；想好鄰店人潮怎麼接", "1800":"把第一筆基層災情傳出去（衛星終端）", "1830":"檢查電量：判斷撐不撐得到午夜", crowd:"決定手機充電開放多少，又不讓電量變紅", "1B":"先接住最危急的維生需求，同時仍撐得過日出", comm:"通訊恢復後補足電源與授權，完成核心議題", "2200":"交鋒題：被點名的組直接回答", "2300":"確認門市撐得到 06:00 日出", end:"把今晚的缺口寫成卡片，帶進第二階段" };
+const GOALS={ open:"認識角色與流程", blackout:"看懂門市如何自動孤島運轉；社會組說出斷電後前 30 分鐘先做什麼", "1A":"技術組降載並接上外部電源 → 社會組定營運模式 → 技術組修正", ups:"決定要不要斷開雲端連線；想好鄰店人潮怎麼接", "1800":"把第一筆基層災情傳出去（衛星終端）", "1830":"檢查電量：判斷撐不撐得到午夜", crowd:"決定手機充電開放多少，又不讓電量變紅", "1B":"社會組先定排序原則 → 技術組依原則撥電、派人找人 → 技術組修正", comm:"巡守隊回報：決定接住多少維生需求；補足電源與授權；完成核心議題", "2200":"交鋒題：被點名的組直接回答（巡守隊晚回報時，先決定接住多少人）", "2300":"確認門市撐得到 06:00 日出", end:"把今晚的缺口寫成卡片，帶進第二階段" };
 const ENERGY_EV=["1A","1830","crowd","1B","comm","2300"];
 const SEGS=[ {name:"情境引導",min:10},{name:"技術示範（一）＋回應",min:30},{name:"狀況注入＋技術示範（二）",min:35},{name:"核心議題",min:35},{name:"上牆",min:10} ];
 const LOOP=["①情境引導","②技術示範","③狀況注入","④回應與提問","⑤核心議題與上牆"];
 const STANCE=[["can","我們可以配合"],["stuck","我們卡在…"],["ok","我們這裡沒有問題"],["judge","要等技術判定"]];
-const ROLES={ tech:["示範門市店長","電網（台電）","通訊（電信業者）","聚合平台","資安研判"], soc:["便利商店代表","里長","宗教團體","社福機構","產業協會"], gov:["市府應變中心","區公所","警消","社會局","衛生局"] };
+const ROLES={ tech:["示範門市店長","電網（台電）","通訊（電信業者）","聚合平台","資安研判"], soc:["便利商店代表","里長","宗教團體","社福機構","產業協會"], gov:["市府應變中心","區公所","警消","社會局","衛生局","台電區營業處"] };
 let spk={g:"soc",role:""};
 const stText=v=>STANCE.find(x=>x[0]===v)?.[1]||v;
 const stancesOf=r=>r?.stances?.length?r.stances:(r?.stance||[]).map(v=>({g:"",role:"",s:v}));
@@ -324,28 +330,29 @@ const spkName=x=>[x.g?WHO[x.g][0]:"",x.role].filter(Boolean).join("・")||"未�
 const EVENTS=[
   { id:"open", seg:0, t:0, short:"開場", kicker:"城市能源綠洲演習・第一階段", title:"你是前金區最後一盞燈", beats:[
     { type:"story", loop:1, min:2, text:"2026 年秋。一場接一場的軍演在臺灣周圍上演，大多數人已經習以為常。\n停電時，大多數人不知道官方避難場所在哪裡，卻都知道最近的便利商店在哪裡。\n你是前金區一家完成「社區能源韌性樞紐（CERH）」改造的全家門市店長。店裡有一套約 13.5 度的儲能、一具衛星終端。" },
-    { type:"demo", who:"host", loop:1, min:3, title:"今天怎麼進行", items:["技術組先示範：我們現在怎麼做、能撐多久、下一步需要什麼","社會組（全家代表、里長先發言）主要回應；治理組本階段以觀察為主","回應時明確表態：可以配合什麼、卡在哪裡、沒有問題、或要等技術判定","黃色框是要做選擇的地方：請技術組決定，主持人代按"] } ] },
+    { type:"demo", who:"host", loop:1, min:2, title:"今天怎麼進行", items:["技術組先示範：我們現在怎麼做、能撐多久、下一步需要什麼","社會組（全家代表、里長先發言）主要回應；治理組本階段以觀察為主","回應時明確表態：可以配合什麼、卡在哪裡、沒有問題、或要等技術判定","黃色框是要做選擇的地方：請技術組決定，主持人代按"] } ] },
   { id:"blackout", seg:0, t:0, short:"17:30", kicker:"第一日 17:30", title:"整座城市暗了", beats:[
     { type:"blackout", loop:1, min:1 },
     { type:"story", loop:1, min:1, text:"燈在同一刻熄滅。紅綠燈、捷運、電梯、抽水站同時停下，手機失去訊號。\n自動切換開關在 20 毫秒內把門市和電網切開，改由店內儲能供電：你的店還亮著。\n但冷氣、招牌、咖啡機也都還開著。總部電話與網路都不通。" },
-    { type:"demo", who:"tech", loop:2, min:3, title:"門市剛剛發生了什麼", items:["自動切換開關偵測到市電中斷，約 20 毫秒內與電網解聯，改由一套約 13.5 度的儲能供電","三組設備都還開著，負載約 15 kW，照這樣不到 1 小時就會全黑","部分已改造門市因韌體遭竄改，這時切換失敗"] },
-    { type:"respond", who:"soc", loop:4, min:3, title:"斷電後前 30 分鐘，店長實際會先做什麼？", pick:{ id:"first30", multi:true, opts:["保全冷鏈","處理帳務、保存交易紀錄","安撫店內客人","嘗試聯絡總部","檢查儲能與設備"] } } ] },
+    { type:"demo", who:"tech", loop:2, min:2, title:"門市剛剛發生了什麼", items:["自動切換開關偵測到市電中斷，約 20 毫秒內與電網解聯，改由一套約 13.5 度的儲能供電","三組設備都還開著，負載約 15 kW，照這樣不到 1 小時就會全黑","部分已改造門市因韌體遭竄改，這時切換失敗"] },
+    { type:"respond", who:"soc", loop:4, min:2, title:"斷電後前 30 分鐘，店長實際會先做什麼？", pick:{ id:"first30", multi:true, opts:["保全冷鏈","處理帳務、保存交易紀錄","安撫店內客人","嘗試聯絡總部","檢查儲能與設備"] } } ] },
   { id:"1A", seg:1, t:10, short:"1-A", card:true, kicker:"第一日 17:40．狀況卡 1-A", title:"全黑、斷訊，店長只能自己決定", beats:[
     { type:"story", loop:3, min:1, text:"停電後 10 分鐘，儲能接近滿電，但冷氣、招牌、咖啡機都還開著；照這樣用，不到 1 小時就會耗盡。\n隔壁沒有儲能的門市，收銀機剛剛停擺，店員開始手寫發票。\n店門口停著兩台電動車，車主問你能不能幫忙。" },
-    { type:"shed", who:"tech", loop:2, min:4, ask:"示範降載：請在左邊「設備色塊」關掉要關的設備組" },
-    { type:"choice", who:"tech", loop:2, min:3, id:"ext1", multi:true, ask:"哪些外部電源，要在 1 小時內開始接入？（可複選）",
-      opts:[["R1-2","店前電動車 2 台","30 分鐘內．須車主同意"],["R1-3","門口換電站","1～2 小時．須業者後台開通（斷訊中要先啟用衛星）"],["R1-4","移動式儲能","2～4 小時．須運送與專人操作（斷訊中要先啟用衛星）"],["none","先不接，觀察",""]] },
-    { type:"res", loop:2, min:4, from:"ext1", title:"依序提出、判定、放置" },
-    { type:"respond", who:"soc", loop:4, min:3, title:"採哪一種營運模式？需要什麼前提？總部失聯時，店長有權自己決定嗎？", sugg:["需要總部授權","需要市府授權","店長可以自行決定","應事先寫進加盟或合作契約"], pick:{ id:"1A-1", opts:["A 維持營業（一級＋二級）","B 縮減營業（只開一級）","C 依總部既有的緊急程序"] } },
-    { type:"observe", who:"gov", loop:4, min:1, title:"門市在沒有市府指令下，做了哪些決定？" } ] },
+    { type:"shed", who:"tech", loop:2, min:3, ask:"技術組示範降載：在左邊「設備色塊」關掉要關的設備組，並說明能撐多久" },
+    { type:"choice", who:"tech", loop:2, min:3, id:"ext1", multi:true, ask:"哪些通訊與外部電源，要在 1 小時內開始接入？（可複選）",
+      opts:[["R1-5","門市衛星終端","立即．斷訊中聯絡業者、總部、市府的管道"],["R1-2","店前電動車 2 台","30 分鐘內．須車主同意"],["R1-3","門口換電站","1～2 小時．須業者後台開通"],["R1-4","移動式儲能","2～4 小時．須運送與專人操作"],["none","先不接，觀察",""]] },
+    { type:"res", loop:2, min:3, from:"ext1", title:"依序提出、判定、放置（衛星終端先設定）" },
+    { type:"respond", who:"soc", loop:4, min:3, title:"社會組回應：要採哪一種營運模式？需要什麼前提？總部失聯時，店長有權自己決定嗎？", sugg:["需要總部授權","需要市府授權","店長可以自行決定","應事先寫進加盟或合作契約"], pick:{ id:"1A-1", apply:"mode", opts:["A 維持營業（一級＋二級）","B 縮減營業（只開一級）","C 依總部既有的緊急程序"] } },
+    { type:"revise", who:"tech", loop:4, min:2, title:"技術組依社會組選的營運模式，修正降載與外部電源" },
+    { type:"observe", who:"gov", loop:4, min:1, title:"店長的現場決策、開放冰箱與插座，誰授權？出事誰負責？（核心議題時回應）" } ] },
   { id:"ups", seg:1, t:15, short:"17:45", kicker:"第一日 17:45", title:"隔壁的燈熄了", beats:[
     { type:"story", loop:1, min:1, text:"同一條街上兩家沒有改造的門市，不斷電系統只撐了 10 到 15 分鐘。\n收銀機停擺，店員改用手開發票。整條街，現在只剩你的店還亮著。" },
     { type:"choice", who:"tech", loop:2, min:3, id:"ems", ask:"切換失敗的門市可能有惡意程式。示範門市要不要暫停與能源管理系統（雲端）的連線？",
       opts:[["A","暫停連線，改為離線運作","降低擴散風險；總部與聚合商看不到門市"],["B","維持連線","可遠端監看；攻擊仍在持續"]] },
-    { type:"respond", who:"soc", loop:4, min:2, title:"隔壁門市的店員和客人會往哪裡去？示範門市接得住嗎？", sugg:["會往示範門市來","接得住：只開一級＋二級","接不住：要先有外部電源","需要人力分流與排隊"] } ] },
+    { type:"respond", who:"soc", loop:4, min:1, title:"隔壁門市的店員和客人會往哪裡去？示範門市接得住嗎？", sugg:["會往示範門市來","接得住：只開一級＋二級","接不住：要先有外部電源","需要人力分流與排隊"] } ] },
   { id:"1800", seg:1, t:30, short:"18:00", kicker:"第一日 18:00", title:"天完全黑了", suggest:"1E", beats:[
     { type:"story", loop:1, min:1, text:"停電 30 分鐘。街上沒有路燈，只有車燈和你店裡的光。\n市府應變中心靠自有發電機運轉，但人員剛下班，和多數區公所、派出所失去聯繫；前 6 到 12 小時，他們忙著對接台電、中油與警消。" },
-    { type:"choice", who:"tech", loop:2, min:2, id:"sat", ask:"市府還不知道基層災情。要不要啟用門市衛星終端，傳回第一筆基層災情？",
+    { type:"choice", who:"tech", loop:2, min:2, id:"sat", skipIf:"R1-5", ask:"市府還不知道基層災情。要不要啟用門市衛星終端，傳回第一筆基層災情？",
       opts:[["R1-5","啟用 R1-5 衛星終端","耗電已在一級負載內；頻寬有限"],["no","先不啟用",""]] },
     { type:"res", loop:2, min:2, from:"sat", title:"設定衛星終端" },
     { type:"observe", who:"gov", loop:4, min:1, title:"門市衛星能不能成為基層通報點？由誰下令？" } ] },
@@ -360,27 +367,31 @@ const EVENTS=[
     { type:"respond", who:"soc", loop:4, min:3, title:"排隊與分流要多少人力？誰不會自己走到超商？", four:true, sugg:["店員 2 人就夠","需要志工 2～4 人","請里長、巡守隊協助","發號碼牌、分時段充電","維生需求者走專用通道"] } ] },
   { id:"1B", seg:2, t:150, short:"1-B", card:true, kicker:"第一日 20:00．狀況卡 1-B", title:"門外的需求比電還多", beats:[
     { type:"story", loop:3, min:1, text:"晚上 8 點，門市湧入兩、三百人。\n十幾位家屬帶著需冷藏的胰島素；一位女兒推著使用製氧機的父親前來；附近診所來問能否借電給冷藏疫苗。\n市府應變中心與多數里辦公處失聯，完全不知道各里的情況。" },
-    { type:"choice", who:"tech", loop:2, min:4, id:"serve", multi:true, apply:"serve", ask:"示範可撥電量：先接住哪些？（可複選）",
+    { type:"respond", who:"soc", loop:4, min:4, title:"社會組主答：電不夠時，以哪一種原則排序？需要哪些資訊與人力才做得到？", sugg:["需要維生器材登記名冊","需要里長、里幹事協助辨識","需要醫護人員判斷","需要排隊與分流人力"], pick:{ id:"1B-1", opts:["A 依醫療風險（沒有就會出事者優先）","B 依登記名冊（區公所、里長或醫療單位提供）","C 先到先服務"] } },
+    { type:"choice", who:"tech", loop:2, min:3, id:"serve", multi:true, apply:"serve", ruleFrom:"1B-1", ask:"技術組示範可撥電量：依社會組的排序原則，先接住哪些？（可複選）",
       opts:[["N2","製氧機父親 1 台","0.3～0.6 kW"],["N3","胰島素冷藏 12 個","合計約 0.05～0.13 kW"],["N4","診所疫苗冰箱 1 台","每日 0.5～1 度"],["none","暫不接住",""]] },
     { type:"choice", who:"tech", loop:2, min:2, id:"patrol", ask:"走不出家門的居家製氧機（約 12 人）、呼吸器（約 6 人）使用者不會自己來。要不要派巡守隊與里幹事去找？",
       opts:[["R1-7","派 R1-7 巡守隊與里幹事","4～6 人，約 1 小時"],["no","先不派",""]] },
     { type:"res", loop:2, min:2, from:"patrol", title:"設定巡守隊" },
-    { type:"respond", who:"soc", loop:4, min:4, title:"電不夠時，以哪一種原則排序？需要哪些資訊與人力才做得到？", sugg:["需要維生器材登記名冊","需要里長、里幹事協助辨識","需要醫護人員判斷","需要排隊與分流人力"], pick:{ id:"1B-1", opts:["A 依醫療風險","B 依登記名冊","C 先到先服務"] } },
-    { type:"observe", who:"gov", loop:4, min:1, title:"名冊能不能給門市用？是否指定門市衛星為通報點？" } ] },
+    { type:"revise", who:"tech", loop:4, min:2, title:"技術組依社會組的排序原則，修正撥電與資源" },
+    { type:"observe", who:"gov", loop:4, min:1, title:"市府失去基層災情時，能否指定門市衛星為基層通報點？名冊能不能給門市用？（核心議題時回應）" } ] },
   { id:"comm", seg:3, t:210, short:"21:00", kicker:"第一日 21:00", title:"訊號回來了一點", suggest:"1F", beats:[
     { type:"story", loop:1, min:1, text:"移動通訊車自外縣市調入，前金區部分區域恢復有限訊號。\n通訊狀態條從紅燈轉為橙燈：業者後台、總部與市府，現在有機會聯絡上了。" },
-    { type:"choice", who:"tech", loop:2, min:3, id:"ext2", multi:true, ask:"通訊恢復了。接著要接入或申請哪些？（可複選）",
+    { type:"homecare", who:"tech", loop:2, min:2 },
+    { type:"choice", who:"tech", loop:2, min:2, id:"ext2", multi:true, ask:"通訊恢復了。接著要接入或申請哪些？（可複選）",
       opts:[["R1-3","門口換電站","業者後台開通；損耗二至三成"],["R1-4","移動式儲能","約 50 度，2～4 小時"],["R1-6","緊急授權書","向市府或全家總部申請"],["none","都不用",""]] },
-    { type:"res", loop:2, min:3, from:"ext2", title:"依序提出、判定、放置" },
+    { type:"res", loop:2, min:2, from:"ext2", title:"依序提出、判定、放置" },
+    { type:"revise", who:"tech", loop:4, min:1, title:"技術組確認今晚的最終配置（進入核心議題前）" },
     { type:"respond", who:"tech", loop:5, min:10, core:true, title:"核心議題：到明天早上日出前，這家門市能服務多少人、靠什麼撐住？哪些前提現在還不存在？", sugg:["緊急授權書","電動車責任歸屬與賠償規定","換電站離線緊急放電程序","夜間看守與電工人力","名冊使用授權","穩定的通訊"] },
-    { type:"respond", who:"soc", loop:5, min:5, title:"核心議題・社會組補充：服務對象與排序；名單外的人怎麼辦？", four:true, sugg:["依醫療風險排序","先接住名冊上的人","名單外的人由巡守隊逐戶找","需要市府提供名冊"] },
-    { type:"respond", who:"gov", loop:5, min:6, observeSummary:true, title:"核心議題・治理組回應：門市剛才的決定，事後能否被承認？依據哪一份文件？出事由誰負責？", sugg:["依緊急授權書承認","事後由市府追認","依全家內部標準作業程序","目前沒有依據文件","出事由店長承擔","出事由市府承擔"] } ] },
+    { type:"respond", who:"soc", loop:5, min:4, title:"核心議題・社會組補充：服務對象與排序；名單外的人怎麼辦？", four:true, sugg:["依醫療風險排序","先接住名冊上的人","名單外的人由巡守隊逐戶找","需要市府提供名冊"] },
+    { type:"respond", who:"gov", loop:5, min:5, observeSummary:true, title:"核心議題・治理組回應：門市剛才的決定，事後能否被承認？依據哪一份文件？出事由誰負責？", sugg:["依緊急授權書承認","事後由市府追認","依全家內部標準作業程序","目前沒有依據文件","出事由店長承擔","出事由市府承擔"] } ] },
   { id:"2200", seg:3, t:270, short:"22:00", kicker:"第一日 22:00．背景事件", title:"國際媒體開始報導", suggest:"1D", beats:[
     { type:"story", loop:1, min:1, text:"國際媒體出現「臺灣南部大停電、政府束手無策」的報導。\n門口有人在傳：政府已經撤離了。" },
+    { type:"homecare", who:"tech", loop:2, min:1, late:true },
     { type:"respond", who:"all", loop:5, min:6, clash:true, title:"交鋒題：被點名的組請直接回答，或明確說明「做不到，卡在哪裡」" } ] },
   { id:"2300", seg:3, t:330, short:"23:00", kicker:"第一日 23:00．背景事件", title:"柴油優先給醫療與關鍵設施", beats:[
     { type:"story", loop:1, min:1, text:"中央宣布柴油優先供應醫療、軍方與關鍵設施。\n區公所以開口契約租用的發電機，也受這個優先順序限制。" },
-    { type:"choice", who:"tech", loop:2, min:2, id:"dawn", ask:"照目前配置，門市撐得到 06:00 日出嗎？", opts:[["A","撐得到","說明靠哪些電源"],["B","撐不到","說明還缺幾度、該找誰"],["C","不確定","說明卡在哪裡"]] } ] },
+    { type:"choice", who:"tech", loop:2, min:1, id:"dawn", ask:"照目前配置，門市撐得到 06:00 日出嗎？", opts:[["A","撐得到","說明靠哪些電源"],["B","撐不到","說明還缺幾度、該找誰"],["C","不確定","說明卡在哪裡"]] } ] },
   { id:"end", seg:4, t:360, short:"23:30", kicker:"第一日 23:30．上牆", title:"第一個夜晚過了一半", beats:[
     { type:"story", loop:5, min:1, text:"第一階段結束。先把今晚的缺口寫成卡片（需求卡、供給卡、限制卡、開放問題），帶進第二階段；再把「門市服務量表」與「技術準備清單」移到成果牆需求欄。" },
     { type:"cards", loop:5, min:5 },
@@ -394,8 +405,9 @@ const INJECTS={
   "1E":{ title:"備用卡 1-E　保障貨架商品，還是民眾的胰島素？", suggest:"18:00", story:"隔壁未改造門市的店長跑來：收銀機已停、冷凍櫃溫度開始上升，一櫃冰淇淋價值上萬元，問能不能寄放進你的冷凍櫃，或拉一條線過去供電。\n同一時間，門口一位民眾拿著家人的胰島素，等著放進冰箱。",
     beats:[ { type:"choice", who:"tech", loop:2, min:2, id:"1E-2", ask:"門市之間能否臨時拉線供電？", opts:[["A","可以，有條件",""],["B","不可以",""]] }, { type:"respond", who:"soc", loop:4, min:3, title:"冷凍冷藏的空間與電，要先給商品還是給藥品？由誰決定？損失由誰承擔？", sugg:["由店長決定","由總部決定","損失由鄰店自行承擔","損失由市府補償"], pick:{ id:"1E-1", opts:["先給民眾的藥品","先保障鄰店商品"] } } ] },
   "1F":{ title:"備用卡 1-F　總部終於傳來第一則訊息", suggest:"21:00", story:"晚上 9 點，手機訊號有限恢復。總部傳來第一則訊息，要求各門市「依標準作業程序暫停營業、保護資產」；但門口還有十幾位等著充電與冷藏藥品的民眾。",
-    beats:[ { type:"respond", who:"soc", loop:4, min:3, title:"要照總部指示關店，還是維持對外服務？", pick:{ id:"1F-1", opts:["照總部指示暫停營業","維持對外服務"] } }, { type:"respond", who:"gov", loop:4, min:2, title:"此時市府能否、以及如何向門市下達指示？事後是否承認店長的決定？", sugg:["透過移動通訊車傳訊","事後追認店長的決定","目前無法下達","應有預先授權"] } ] },
+    beats:[ { type:"respond", who:"soc", loop:4, min:3, title:"要照總部指示關店，還是維持對外服務？", pick:{ id:"1F-1", apply:"hq", opts:["照總部指示暫停營業","維持對外服務"] } }, { type:"respond", who:"gov", loop:4, min:2, title:"此時市府能否、以及如何向門市下達指示？事後是否承認店長的決定？", sugg:["透過移動通訊車傳訊","事後追認店長的決定","目前無法下達","應有預先授權"] } ] },
 };
+const BASE_CARDS=CARDS.slice(), BASE_INJ={...INJECTS};
 const WHO={ tech:["技術組","tech"], soc:["社會組","soc"], gov:["治理組","gov"], all:["全體","all"], host:["主持人","host"] };
 const F_NEED={ target:["居家維生器材使用者","走不出家門的長者","醫療院所／診所","社福／長照機構","移工與新住民","街友","門市自身","其他"], unit:["人","戶","台","度"], tier:["一級・最後才關","二級・有餘電才開","三級・斷電即關"], due:["立即","6 小時內","日出前","24 小時內"] };
 const F_SUP={ provider:["居民","全家門市","換電業者","電信業者","區公所","宗教團體","聚合商","其他"], type:["露營電源","電動機車電池","電動車","發電機","人力","通訊","場地","其他"], unit:["度","kW","台","人","處"], when:["立即","1 小時內","數小時","日出後"], auth:["車主同意","居民同意","業者後台","區公所","市府","台電","全家總部"] };
@@ -411,10 +423,13 @@ const QUICK_SUP=[
 /* ============================================================
    狀態
    ============================================================ */
-const KEY="fm-oasis-d1-v4";
-const fresh=()=>({ ev:0, beat:0, t:0, cap:13.5, scen:"worst", tiers:{1:true,2:true,3:true}, served:{}, log:[], cards:{}, rec:{}, d2:[], inj:{}, injSkip:{}, svc:{}, clash:null, beatStart:Date.now(), pausedAt:null, coached:false, history:[] });
+const KEY="fm-oasis-d1-v5";
+const fresh=()=>({ ev:0, beat:0, t:0, cap:13.5, scen:"worst", tiers:{1:true,2:true,3:true}, served:{}, log:[], cards:{}, rec:{}, d2:[], inj:{}, injSkip:{}, svc:{}, clash:null, beatStart:Date.now(), pausedAt:null, coached:false, maxEv:0, maxBeat:0, off:{}, xcards:[], xinj:{}, flags:{}, history:[] });
 let G=(()=>{ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.ev!=null) return {...fresh(),...s}; }catch(e){} return fresh(); })();
-function save(){ try{ const {history,...r}=G; localStorage.setItem(KEY,JSON.stringify({...r,history:history.slice(-25)})); }catch(e){} }
+function syncCustom(){ CARDS.splice(0,CARDS.length,...BASE_CARDS,...(G.xcards||[])); Object.keys(INJECTS).forEach(k=>{ if(!BASE_INJ[k]) delete INJECTS[k]; }); Object.assign(INJECTS,G.xinj||{}); }
+syncCustom();
+const isOff=id=>!!G.off?.[id];
+function save(){ if(G.ev>G.maxEv||(G.ev===G.maxEv&&G.beat>G.maxBeat)){ G.maxEv=G.ev; G.maxBeat=G.beat; } try{ const {history,...r}=G; localStorage.setItem(KEY,JSON.stringify({...r,history:history.slice(-25)})); }catch(e){} }
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt1=n=>(Math.round(n*10)/10).toFixed(1);
@@ -444,7 +459,7 @@ const live=(id,t=nowT())=>planned(id)&&G.cards[id].liveAt<=t;
 const logs=()=>[{t:0,tiers:{1:true,2:true,3:true},served:{}},...G.log].sort((a,b)=>a.t-b.t);
 const kwAt=(t,log=logs())=>{ let s=log[0]; for(const l of log){ if(l.t<=t) s=l; else break; } return loadOf(s); };
 function run(T,end){
-  const log=logs(), conns=CARDS.filter(c=>c.kind==="energy"&&planned(c.id)).map(c=>({t:G.cards[c.id].liveAt,e:cardEnergy(c.id),id:c.id}));
+  const log=logs(), conns=CARDS.filter(c=>c.kind==="energy"&&planned(c.id)&&!isOff(c.id)).map(c=>({t:G.cards[c.id].liveAt,e:cardEnergy(c.id),id:c.id}));
   const pts=[...new Set([0,T,end,...log.map(l=>l.t),...conns.map(c=>c.t)])].filter(x=>x>=0&&x<=end).sort((a,b)=>a-b);
   let En=G.cap, used=0, dark=null, sup=G.cap, at=null, zero=null, minE=G.cap, darkMin=0; const added=new Set();
   for(let i=0;i<pts.length;i++){ const p=pts[i];
@@ -458,7 +473,15 @@ function run(T,end){
   return { ...at, zero };
 }
 function forecast(){ const T=nowT(), r=run(T,T+48*60); return { ...r, hrs:r.dark!=null?0:r.zero!=null?(r.zero-T)/60:null }; }
-function setState(p){ const t=G.t, st={tiers:{...G.tiers},served:{...G.served},...p}; const last=G.log[G.log.length-1], e={t,tiers:st.tiers,served:st.served}; if(last&&last.t===t) G.log[G.log.length-1]=e; else G.log.push(e); G.tiers=st.tiers; G.served=st.served; save(); }
+function setState(p){ const t=G.t, prev={tiers:{...G.tiers},served:{...G.served}}, st={tiers:{...G.tiers},served:{...G.served},...p}, e={t,tiers:st.tiers,served:st.served};
+  const i=G.log.findIndex(l=>l.t===t); if(i>=0) G.log[i]=e; else G.log.push(e);
+  G.log.forEach(l=>{ if(l.t<=t) return;
+    if(p.tiers) TIERS.forEach(x=>{ if(prev.tiers[x.t]!==st.tiers[x.t]) l.tiers={...l.tiers,[x.t]:st.tiers[x.t]}; });
+    if(p.served) Object.keys({...prev.served,...st.served}).forEach(k=>{ if((prev.served[k]||0)!==(st.served[k]||0)) l.served={...l.served,[k]:st.served[k]||0}; }); });
+  G.tiers=st.tiers; G.served=st.served; save(); }
+function stateAt(t){ let s=logs()[0]; for(const l of logs()){ if(l.t<=t) s=l; else break; } return { tiers:{...s.tiers}, served:{...s.served} }; }
+function goTo(i,beat){ G.ev=i; G.t=EVENTS[i].t; G.beat=beat; const s=stateAt(G.t); G.tiers=s.tiers; G.served=s.served; typed[bkey(i,0)]=true; startBeat(); save(); closeLayer(); render(); enterBeat(); }
+const hcDone=()=>Object.values(G.rec).some(r=>r.hc);
 function goalMet(){ const f=forecast(); return f.dark==null&&(f.zero==null||f.zero>=SUNRISE); }
 function needsSat(id){ if(live("R1-5",G.t)||!commRed(G.t)) return false; const d=CARDS.find(c=>c.id===id), a=G.cards[id]?.ans||{}; return id==="R1-4"||!!d.channel||(id==="R1-3"&&!a.how?.startsWith("提出"))||(id==="R1-7"&&!!a.how?.startsWith("透過")); }
 const isStuck=id=>!planned(id)&&((G.cards[id]?.stuck||[]).length>0||G.cards[id]?.verdict==="不可行");
@@ -498,13 +521,16 @@ function scoring(){
   const resp=[]; EVENTS.forEach((e,i)=>{ if(i>G.ev) return; beatsOf(i).forEach((b,j)=>{ if(b.type==="respond"&&(i<G.ev||j<=G.beat)) resp.push(G.rec[bkey(i,j)]); }); });
   const stanced=resp.length?resp.filter(x=>stancesOf(x).length).length/resp.length:0;
   const stuckN=Object.values(G.cards).filter(c=>(c.stuck||[]).length).length+Object.values(G.rec).filter(x=>(x.tags||[]).length).length+G.d2.filter(x=>x.kind==="lim").length;
-  const s5=(au==null?0:au<=servedAt?40:20)+Math.round(stanced*40)+(stuckN>0?20:0);
+  const usedStuck=CARDS.filter(c=>planned(c.id)&&(G.cards[c.id]?.stuck||[]).length).length;
+  let goStuck=0; EVENTS.forEach((e,i)=>beatsOf(i).forEach((b,j)=>{ if(b.type!=="choice") return; const r=G.rec[bkey(i,j)]; if(!r||!(r.tags||[]).length) return; const v=[].concat(r.value??[]); if(v.length&&!v.every(x=>["no","none","0"].includes(x))) goStuck++; }));
+  const ded=Math.min(40,usedStuck*10+goStuck*5+(G.flags?.defyHQ&&!live("R1-6",T)?10:0));
+  const s5=Math.max(0,(au==null?0:au<=servedAt?40:20)+Math.round(stanced*40)+(stuckN>0?20:0)-ded);
   const S=[
     ["社會福利最大化",s1,30,`依斷電風險加權的接住量 ${fmt1(wGot)}／${fmt1(wTot)}`],
     ["電量運用穩定度",s2,25,`${r.dark!=null?"目前全黑":"未全黑"}・${(r.zero==null||r.zero>=SUNRISE)&&r.dark==null?"可撐過日出":"撐不到日出"}・最低電量 ${fmt1(r.minE)} 度・全黑 ${Math.round(r.darkMin||0)} 分`],
     ["資源配置效率",s3,20,`到日出缺口約 ${fmt1(gap)} 度・已動員 ${fmt1(M)} 度・動員成本 ${fmt1(cost)}／${fmt1(costMax)}`],
     ["應變速度",s4,15,`降載 ${shed==null?"未":hhmm(shed)}・外部電源 ${firstExt==null?"未":hhmm(firstExt)}・基層通報 ${sat==null?"未":hhmm(sat)}`],
-    ["治理與責任",s5,10,`授權書 ${au==null?"未取得":hhmm(au)}・表態 ${Math.round(stanced*100)}%・標出卡關 ${stuckN} 處`],
+    ["治理與責任",s5,10,`授權書 ${au==null?"未取得":hhmm(au)}・表態 ${Math.round(stanced*100)}%・標出卡關 ${stuckN} 處${ded?`・明知卡關仍執行 −${ded}`:""}`],
   ];
   const total=Math.round(S.reduce((s,x)=>s+x[1]*x[2]/100,0));
   const L=total>=90?["S","韌性樞紐典範"]:total>=80?["A","穩健應變門市"]:total>=70?["B","可靠民生節點"]:total>=60?["C","待強化節點"]:["D","需全面檢討"];
@@ -601,7 +627,7 @@ function scene(fc,T){
   </div>`;
 }
 function blocksCard(){
-  const locked=G.ev<2, focus=curBeat()?.type==="shed";
+  const locked=G.ev<2, focus=["shed","revise"].includes(curBeat()?.type);
   return `<div class="blocks ${focus?"focusring":""}" id="blocks">${TIERS.map(x=>{ const o=G.tiers[x.t]!==false; return `<button class="blk t${x.t} ${o?"on":""}" data-act="tier" data-t="${x.t}" aria-pressed="${o}"${dis(locked,"17:40 狀況卡 1-A 之後才能調整")}>
     <b>${x.name}<span class="tiny mute">　${x.tag}</span></b><span class="kw">${fmt1(demV(x.kw))} kW</span>
     <div class="icons">${x.devs.map(([i,n])=>`<span>${icon(i)}${n}</span>`).join("")}</div>
@@ -609,8 +635,9 @@ function blocksCard(){
 }
 function trayCard(T){
   const arr=NEEDS.filter(n=>T>=n.at), cb=curBeat(), callSat=cb?.type==="res"&&!goalMet()&&resIds(cb).some(id=>!planned(id)&&needsSat(id));
-  return `<div class="card tray" id="tray">
-    <span class="lb">資源卡</span><div class="cards6">${CARDS.filter(c=>c.kind!=="base").map(c=>{ const cc=G.cards[c.id]||{}, lv=live(c.id,T), pd=planned(c.id)&&!lv, st=isStuck(c.id), kp=isKept(c.id), call=c.id==="R1-5"&&callSat;
+  const rv=cb?.type==="revise"||(cb?.type==="homecare");
+  return `<div class="card tray ${cb?.type==="revise"?"focusring":""}" id="tray">
+    <span class="lb">資源卡</span><div class="cards6">${CARDS.filter(c=>c.kind!=="base"&&!isOff(c.id)).map(c=>{ const cc=G.cards[c.id]||{}, lv=live(c.id,T), pd=planned(c.id)&&!lv, st=isStuck(c.id), kp=isKept(c.id), call=c.id==="R1-5"&&callSat;
       return `<button class="xr ${lv?"live":pd?"pend":st?"stuck":kp?"keep":""} ${call?"callme":""}" data-act="open" data-card="${c.id}"${dis(G.ev<2,"17:40 狀況卡 1-A 之後解鎖")}><b>${c.id} ${esc(c.name)}</b><span class="s">${lv?"已生效":pd?`${hhmm(cc.liveAt)} 生效`:st?"卡關":kp?"保留・未使用":call?"請先啟用":esc(c.time)}${c.kind==="energy"&&planned(c.id)?`・${fmt1(cardEnergy(c.id))} 度`:""}</span></button>`; }).join("")}</div>
     <span class="lb">需求卡</span><div class="cards6">${arr.length?arr.map(n=>{ const q=G.served[n.id]||0, lk=n.needs&&!live(n.needs,T); return `<div class="xr ${q>=n.qty?"live":""} ${n.life?"life":""} ${lk?"lock":""}"><b>${esc(n.title)}</b><span class="s">${lk?"要先派巡守隊":`接住 ${q}／${n.qty}`}・${n.tier}</span></div>`; }).join(""):`<span class="tiny mute" style="grid-column:1/-1">19:00 起，門外的人會陸續出現。</span>`}</div>
   </div>`;
@@ -621,13 +648,13 @@ let typed={};
 function flowCard(){
   const e=E(), bs=beatsOf(), b=bs[G.beat], loopNow=b?.loop||1, used=new Set(bs.slice(0,G.beat).map(x=>x.loop));
   const injNow=e.suggest&&G.inj[e.suggest]==null&&!G.injSkip[e.suggest];
-  const lab={story:"情境",blackout:"全黑",demo:"示範",shed:"降載",choice:"技術組選擇",res:"放置資源",observe:"治理組觀察",cards:"寫卡片",wall:"上牆",inject:"注入"};
+  const lab={story:"情境",blackout:"全黑",demo:"示範",shed:"降載",choice:"技術組選擇",res:"放置資源",observe:"治理組觀察",cards:"寫卡片",wall:"上牆",inject:"注入",revise:"技術組修正",homecare:"居家維生"};
   return `<article class="card flow" id="flow">
     <div class="loop">${LOOP.map((l,i)=>`<span class="${i===2&&injNow?"injnow":i+1===loopNow?"on":used.has(i+1)?"done":""}">${l}</span>`).join("")}</div>
     <div class="row between"><span class="kick">${esc(e.kicker)}</span><span class="row">${e.card?`<span class="chip blue">狀況卡</span>`:""}<button class="small b-orange" data-act="tools">③ 狀況注入</button></span></div>
     <div><h2>${esc(e.title)}</h2><div class="beats" style="margin-top:.3rem">${bs.map((x,j)=>`<span data-act="gobeat" data-j="${j}" title="跳到這一步" class="${j===G.beat?"now":beatDone(x,bkey(G.ev,j))&&j<G.beat?"done":j<G.beat?"miss":""}">${j+1} ${x.type==="respond"?WHO[x.who][0]+"回應":lab[x.type]}</span>`).join("")}</div></div>
     <div class="goal"><b>🎯 本輪目標</b><span>${esc(GOALS[e.id]||"")}</span>${ENERGY_EV.includes(e.id)?(goalMet()?'<span class="ok">✓ 目前撐得過 06:00</span>':'<span class="no">✗ 目前撐不到 06:00</span>'):""}</div>
-    <div class="body" id="body">${injNow?injBar(e.suggest):""}${beatBody(b)}</div>
+    <div class="body" id="body">${G.ev<G.maxEv?`<div class="rewind">⟲ 回溯修正中：正在修改 ${hhmm(G.t)} 的決定，改動會套用到之後的時間<button class="b-blue small" data-act="unrewind">回到 ${hhmm(EVENTS[G.maxEv].t)} 繼續 ▶</button></div>`:""}${injNow?injBar(e.suggest):""}${beatBody(b)}</div>
     ${flowFoot(b)}
   </article>`;
 }
@@ -635,7 +662,9 @@ function injBar(id){ const I=INJECTS[id]; return `<div class="injbar"><b>③ 現
 function beatDone(b,k){
   const r=G.rec[k]||{};
   if(!b) return true;
-  if(b.type==="choice") return b.multi?(r.value||[]).length>0:r.value!=null;
+  if(b.type==="choice") return (b.skipIf&&planned(b.skipIf)&&r.value==null)||(b.multi?(r.value||[]).length>0:r.value!=null);
+  if(b.type==="revise") return !!r.done;
+  if(b.type==="homecare") return !!r.done||!planned("R1-7")||(!live("R1-7",G.t)&&!b.late)||(!!b.late&&(hcDone()||!live("R1-7",G.t)));
   if(b.type==="shed") return !!r.done;
   if(b.type==="res") return goalMet()||resIds(b).every(id=>planned(id)||isStuck(id)||isKept(id));
   if(b.type==="respond") return !!r.done;
@@ -646,7 +675,7 @@ function beatDone(b,k){
 function bsDoneTo(j){ const bs=beatsOf(); for(let i=0;i<j;i++) if(!beatDone(bs[i],bkey(G.ev,i))) return false; return true; }
 function todoText(b){
   if(!b) return "";
-  return { choice:"請在黃色框中選擇", shed:"請在設備色塊完成降載並按確認", res:"電量還撐不到 06:00：請放置資源卡，或把接不了的卡標記「保留」或卡關原因", respond:"請打開回應視窗並記錄", blackout:"請先播放全黑與自動切換" }[b.type]||"";
+  return { choice:"請在黃色框中選擇", shed:"請在設備色塊完成降載並按確認", res:"電量還撐不到 06:00：請放置資源卡，或把接不了的卡標記「保留」或卡關原因", respond:"請打開回應視窗並記錄", blackout:"請先播放全黑與自動切換", revise:"請技術組確認：維持原配置或已修正", homecare:"請決定要接住幾位居家維生器材使用者" }[b.type]||"";
 }
 function flowFoot(b){
   const k=bkey(), last=G.beat>=beatsOf().length-1, done=beatDone(b,k);
@@ -667,12 +696,30 @@ function beatBody(b){
       <input data-input="note" placeholder="理由或前提（選填）" value="${esc(r.note||"")}">
       <button class="b-green b-big" data-act="shedok">${r.done?"已確認，可再調整後重新確認":"確認降載"}</button></div>`; }
   if(b.type==="choice"){ const sel=r.value||(b.multi?[]:null);
+    if(b.skipIf&&planned(b.skipIf)&&r.value==null) return `<div class="task"><b>✓ ${esc(CARDS.find(c=>c.id===b.skipIf)?.name||b.skipIf)}已在 ${hhmm(G.cards[b.skipIf].placedAt??0)} 啟用，這一步不用再選。</b><span>請技術組說明：第一筆基層災情傳給誰、頻寬能同時支援多少通報。</span></div>`;
+    const rule=b.ruleFrom?ruleOf(b.ruleFrom):null;
     return `<div class="focus"><span class="tag">● 請${WHO[b.who][0]}選擇・主持人代按</span><div class="ask">${esc(b.ask)}</div>
-      <div class="opts ${b.opts.length>2?"two":""}">${b.opts.map(([v,t,h])=>{ const on=b.multi?sel.includes(v):sel===v; return `<button class="opt ${on?"sel":""}" data-act="pick" data-v="${esc(v)}"><span class="k">${on?"✓":esc(v.length<=2?v:"·")}</span><span class="t"><b>${esc(t)}</b>${h?`<span>${esc(h)}</span>`:""}</span></button>`; }).join("")}</div>
-      <input data-input="note" placeholder="理由或前提（選填）" value="${esc(r.note||"")}">
+      ${b.ruleFrom?`<div class="fb"><span>社會組的排序原則：<b>${esc(rule||"尚未選擇")}</b></span></div>`:""}
+      <div class="opts ${b.opts.length>2?"two":""}">${b.opts.map(([v,t,h])=>{ const on=b.multi?sel.includes(v):sel===v, off=isOff(v); return `<button class="opt ${on?"sel":""}" data-act="pick" data-v="${esc(v)}"${dis(off,"控制組已抽走這張資源卡")}><span class="k">${on?"✓":esc(v.length<=2?v:"·")}</span><span class="t"><b>${esc(t)}${off?"（已抽走）":""}</b>${h?`<span>${esc(h)}</span>`:""}</span></button>`; }).join("")}</div>
+      <div class="row" style="flex-wrap:nowrap"><span class="tiny" style="font-weight:900;white-space:nowrap" title="會計入評等">卡在哪裡</span><div class="tags" style="flex-wrap:nowrap">${STUCK.map(x=>`<button class="tg ${(r.tags||[]).includes(x)?"on":""}" data-act="rtag" data-v="${x}">${x}</button>`).join("")}</div><input data-input="note" placeholder="理由或前提（選填）" value="${esc(r.note||"")}" style="flex:1"></div>
       </div>`; }
+  if(b.type==="revise"){ const fc=forecast(), fb=feedbackOf(), onList=TIERS.filter(x=>G.tiers[x.t]!==false).map(x=>x.name).join("＋")||"全部關閉";
+    return `<div class="focus"><span class="tag">● 技術組依回應修正・主持人代按</span><div class="ask">${esc(b.title)}</div>
+      <div class="fb">${fb.length?fb.map(x=>`<span>${esc(x)}</span>`).join(""):"<span class='mute'>這一輪還沒有回應紀錄</span>"}</div>
+      <div class="sumline"><div><span class="tiny mute">目前開著</span><b style="font-family:var(--f);font-size:.95rem">${esc(onList)}</b></div><div><span class="tiny mute">負載</span><b>${fmt1(fc.kw)} kW</b></div><div><span class="tiny mute">${goalMet()?"撐得過 06:00":"預計耗盡"}</span><b>${fc.dark!=null?"全黑":goalMet()?"✓":hhmm(fc.zero)}</b></div></div>
+      <span class="tiny mute">要修正就直接點左邊設備色塊或下方資源卡，改完再按「已修正」。</span>
+      <div class="row" style="flex-wrap:nowrap"><input data-input="note" placeholder="修正了什麼、為什麼（選填）" value="${esc(r.note||"")}" style="flex:1"><button class="${r.done&&r.mode==="keep"?"b-green":""}" data-act="rev" data-v="keep">維持原配置</button><button class="${r.done&&r.mode==="changed"?"b-green":"b-blue"}" data-act="rev" data-v="changed">已修正配置</button></div></div>`; }
+  if(b.type==="homecare"){
+    if(!planned("R1-7")) return `<div class="task"><b>沒有派巡守隊：走不出家門的居家製氧機（約 12 人）、呼吸器（約 6 人）使用者沒有被找到。</b><span>請社會組記下：這些人今晚靠什麼？（可在第一階段結束時寫成需求卡）</span></div>`;
+    if(!live("R1-7",G.t)) return `<div class="task"><b>巡守隊 ${hhmm(G.cards["R1-7"].liveAt)} 才會回報。</b><span>${b.late?"":"22:00 會再回到這個決定。"}</span></div>`;
+    if(b.late&&hcDone()&&!r.done) return `<div class="task"><b>✓ 已在稍早決定要接住幾位居家維生器材使用者。</b></div>`;
+    const fc=forecast(), n5=G.served.N5||0, n6=G.served.N6||0, row=(id,lab,max,kw)=>`<div class="hcrow"><span style="display:grid"><b>${lab}</b><span class="tiny mute">共 ${max} 人・每台 ${kw}</span></span><button data-act="hc" data-k="${id}" data-d="-1">−</button><b class="n">${G.served[id]||0}</b><button data-act="hc" data-k="${id}" data-d="1">＋</button></div>`;
+    return `<div class="focus"><span class="tag">● 請技術組決定・主持人代按</span><div class="ask">巡守隊回報：找到走不出家門的居家製氧機 12 人、呼吸器 6 人。今晚要接住幾位？</div>
+      <div class="g2">${row("N5","居家製氧機",12,"0.3～0.6 kW")}${row("N6","居家呼吸器",6,"0.05～0.1 kW")}</div>
+      <div class="row between"><span class="fb" style="flex:1"><span>接住 <b>${n5+n6}</b> 人・負載 <b>${fmt1(fc.kw)} kW</b>・<b style="color:${goalMet()?"var(--green-d)":"var(--red)"}">${fc.dark!=null?"全黑":goalMet()?"撐得過 06:00":"預計 "+hhmm(fc.zero)+" 耗盡"}</b></span></span><button class="b-green b-big" data-act="hcok">${r.done?"重新確認":"確認接住人數"}</button></div>
+      <input data-input="note" placeholder="怎麼接（到門市或帶電源到家裡）、沒接的人怎麼辦（選填）" value="${esc(r.note||"")}"></div>`; }
   if(b.type==="res"){ const ids=resIds(b);
-    if(!ids.length) return `<div class="task"><b>上一步沒有選擇資源卡，這一步略過。</b></div>`;
+    if(!ids.length) return `<div class="task"><b>這一步不需要設定資源卡，請按「下一步」。</b></div>`;
     const gm=goalMet(), sat=!gm&&ids.some(id=>!planned(id)&&needsSat(id));
     return `<div class="focus"><span class="tag">● 請技術組依序設定・主持人代按</span><div class="ask">${esc(b.title)}</div>
       ${gm?`<div class="satcall" style="border-style:solid">✓ 已撐得過 06:00：其餘資源卡可以保留不用，直接按「下一步」</div>`:""}
@@ -688,13 +735,18 @@ function beatBody(b){
   if(b.type==="wall") return `<div class="focus" style="border-color:var(--green);background:var(--green-l)"><span class="tag" style="color:var(--green-d)">⑤ 上牆</span><div class="ask">把第一階段成果移到成果牆需求欄，並公布全家應變中心評等</div></div>`;
   return "";
 }
-function resIds(b){ const bs=beatsOf(); const j=bs.findIndex(x=>x.id===b.from); const v=G.rec[bkey(G.ev,j)]?.value; return (Array.isArray(v)?v:[v]).filter(id=>CARDS.some(c=>c.id===id)); }
+const RES_ORDER=["R1-5","R1-6","R1-2","R1-3","R1-4","R1-7"];
+function resIds(b){ const bs=beatsOf(); const j=bs.findIndex(x=>x.id===b.from); const v=G.rec[bkey(G.ev,j)]?.value; return (Array.isArray(v)?v:[v]).filter(id=>CARDS.some(c=>c.id===id)&&!isOff(id)).sort((a,c)=>(RES_ORDER.indexOf(a)+99)%99-(RES_ORDER.indexOf(c)+99)%99); }
+function ruleOf(pid){ const bs=beatsOf(); const j=bs.findIndex(x=>x.pick?.id===pid); return j<0?null:G.rec[bkey(G.ev,j)]?.value||null; }
+function feedbackOf(){ const bs=beatsOf(), out=[]; bs.slice(0,G.beat).forEach((x,j)=>{ const r=G.rec[bkey(G.ev,j)]; if(!r) return;
+  if(x.type==="respond"){ if(r.value) out.push(`${WHO[x.who][0]}選擇：${[].concat(r.value).join("、")}`); stancesOf(r).forEach(s=>out.push(`${spkName(s)}：${stText(s.s)}${s.s==="stuck"&&(r.tags||[]).length?"（"+r.tags.join("、")+"）":""}`)); if((r.sugg||[]).length) out.push(`回答：${r.sugg.join("、")}`); if(r.text) out.push(`補充：${r.text}`); }
+  else if((r.tags||[]).length) out.push(`技術組自己標的卡關：${r.tags.join("、")}`); }); return out; }
 function eventDone(){ const bs=beatsOf(); const miss=[]; bs.forEach((b,j)=>{ if(!beatDone(b,bkey(G.ev,j))) miss.push(`${j+1}. ${todoText(b)||"尚未進行"}`); }); if(G.beat<bs.length-1) miss.unshift(`還有 ${bs.length-1-G.beat} 個步驟沒進行`); return miss; }
 function bottom(){
   const N=EVENTS[G.ev+1], miss=eventDone();
   return `<footer class="bottom">
     <div class="row"><button data-act="back"${dis(!G.history.length,"已經是第一步")}>↶ 上一步</button><button data-act="tools">主持人工具</button><button data-act="help">怎麼玩</button></div>
-    <nav class="timeline" aria-label="表 8-2 時間配置">${SEGS.map((s,si)=>{ const cur=E().seg; return `<div class="tseg ${si===cur?"on":si<cur?"done":""}"><span class="n">${esc(s.name)}・${s.min} 分</span><span class="ds">${EVENTS.map((e,i)=>e.seg===si?`<i class="${i<G.ev?"done":i===G.ev?"now":""}">${esc(e.short)}</i>`:"").join("")}</span></div>`; }).join("")}</nav>
+    <nav class="timeline" aria-label="表 8-2 時間配置">${SEGS.map((s,si)=>{ const cur=E().seg; return `<div class="tseg ${si===cur?"on":si<cur?"done":""}"><span class="n">${esc(s.name)}・${s.min} 分</span><span class="ds">${EVENTS.map((e,i)=>e.seg===si?`<i class="${i<G.ev?"done":i===G.ev?"now":""}"${i!==G.ev&&i<=G.maxEv?` data-act="rewind" data-i="${i}" title="回溯修正這一輪" style="cursor:pointer"`:""}>${esc(e.short)}</i>`:"").join("")}</span></div>`; }).join("")}</nav>
     <div>${N?`<button class="b-green b-big" id="nextbtn" data-act="advance"${dis(miss.length>0,"這一輪還沒完成："+miss.join("；"))}>推進時間：${esc(N.short.includes(":")?N.short:hhmm(N.t)+"・"+N.short)} ▶</button>`:`<button class="b-green b-big" data-act="result">成果牆 ▶</button>`}</div>
   </footer>`;
 }
@@ -745,20 +797,21 @@ function stanceBox(r){
     <div class="spk"><span class="tiny mute">誰</span>${["tech","soc","gov"].map(g=>`<button class="grp ${g} ${spk.g===g?"on":""}" data-act="spkg" data-g="${g}">${WHO[g][0]}</button>`).join("")}</div>
     <div class="sug">${roles.map(o=>`<button class="${spk.role===o?"sel":""}" data-act="spkr" data-v="${esc(o)}">${esc(o)}</button>`).join("")}<span class="addopt"><input data-addfor="role" placeholder="＋ 自填身分" aria-label="自填發言者身分"><button data-act="addopt" data-scope="role" aria-label="加入">＋</button></span></div>
     <div class="row"><span class="tiny mute">${esc(spkName(spk))} 說：</span></div><div class="stance st4">${STANCE.map(([v,t])=>`<button data-act="stance" data-v="${v}">${t}</button>`).join("")}</div>
-    ${list.length?`<div class="stlist">${list.map((x,i)=>`<div><span class="who ${x.g||"all"}">${esc(spkName(x))}</span><b>${esc(stText(x.s))}</b><button class="tiny" data-act="stdel" data-i="${i}">刪除</button></div>`).join("")}</div>`:""}</div>`;
+    <div class="row"><span class="tiny" style="font-weight:900">卡在哪裡（選「我們卡在…」時勾選，會計入評等）</span><div class="tags">${STUCK.map(x=>`<button class="tg ${(r.tags||[]).includes(x)?"on":""}" data-act="rtag" data-v="${x}" data-dlg="1">${x}</button>`).join("")}</div></div>
+    ${list.length?`<div class="stlist">${list.map((x,i)=>`<div><span class="who ${x.g||"all"}">${esc(spkName(x))}</span><b>${esc(stText(x.s))}${x.s==="stuck"&&(r.tags||[]).length?"（"+esc(r.tags.join("、"))+"）":""}</b><button class="tiny" data-act="stdel" data-i="${i}">刪除</button></div>`).join("")}</div>`:""}</div>`;
 }
 function respondDialog(){
   const b=curBeat(), k=bkey(), r=G.rec[k]||{}, who=b.who, obs=b.observeSummary?observedDecisions():[];
   const left=[
     obs.length?`<div class="q"><span class="lbl">門市在沒有市府指令下做的決定</span><ul style="margin:0;padding-left:1.1rem;font-size:.95rem">${obs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"",
     b.clash?`<div class="q"><span class="lbl">選一題交鋒題</span>${CLASHES.map((q,i)=>`<button style="text-align:left;font-size:.92rem;${G.clash===i?"border-color:var(--yellow);background:var(--yellow-l)":""}" data-act="clash" data-i="${i}">${i+1}. ${esc(q)}</button>`).join("")}</div>`:"",
-    b.pick?`<div class="focus" style="padding:.55rem .7rem"><span class="tag">● 請${WHO[who][0]}選擇${b.pick.multi?"（可複選）":""}</span><div class="choice">${[...b.pick.opts,...(r.extraPick||[])].map(o=>{ const on=b.pick.multi?(r.value||[]).includes(o):r.value===o; return `<button class="${on?"sel":""}" data-act="dpick" data-v="${esc(o)}">${esc(o)}</button>`; }).join("")}<span class="addopt"><input data-addfor="pick" placeholder="＋ 自填，按 Enter 確定" aria-label="自填選項"><button data-act="addopt" data-scope="pick" aria-label="加入">＋</button></span></div></div>`:"",
+    b.pick?`<div class="focus" style="padding:.55rem .7rem"><span class="tag">● 請${WHO[who][0]}選擇${b.pick.multi?"（可複選）":""}</span><div class="choice">${[...b.pick.opts,...(r.extraPick||[])].map(o=>{ const on=b.pick.multi?(r.value||[]).includes(o):r.value===o; return `<button class="${on?"sel":""}" data-act="dpick" data-v="${esc(o)}">${esc(o)}</button>`; }).join("")}<span class="addopt"><input data-addfor="pick" placeholder="＋ 自填，按 Enter 確定" aria-label="自填選項"><button data-act="addopt" data-scope="pick" aria-label="加入">＋</button></span></div>${b.pick.apply?(()=>{ const fc=forecast(); return `<div class="fb"><span>選擇後門市立即調整：負載 <b>${fmt1(fc.kw)} kW</b>・${fc.dark!=null?"全黑":goalMet()?"<b>撐得過 06:00</b>":"預計 <b>"+hhmm(fc.zero)+"</b> 耗盡"}</span></div>`; })():""}</div>`:"",
     b.four?fourBox(r):""
   ].join("");
   const sug=b.sugg?`<div class="q"><span class="lbl">${b.core?"哪些前提現在還不存在？（可複選）":"建議回答（可複選）"}</span><div class="sug">${[...b.sugg,...(r.extraSugg||[])].map(o=>`<button class="${(r.sugg||[]).includes(o)?"sel":""}" data-act="sugg" data-v="${esc(o)}">${esc(o)}</button>`).join("")}<span class="addopt"><input data-addfor="sugg" placeholder="＋ 自填，按 Enter 確定" aria-label="自填回答"><button data-act="addopt" data-scope="sugg" aria-label="加入">＋</button></span></div></div>`:"";
   const right=`${b.core?"":stanceBox(r)}${sug}
         <div class="q"><label class="lbl" for="d-text" style="color:var(--ink)">${b.sugg||b.four?"其他補充（自填）":b.core?"哪些前提現在還不存在？":"回應內容"}</label><textarea id="d-text" data-input="dtext" rows="2" placeholder="只記錄實際說出的內容，不輸入個人資料">${esc(r.text||"")}</textarea>
-          <div class="tags"><span class="tiny mute">卡在哪裡</span>${STUCK.map(x=>`<button class="tg ${(r.tags||[]).includes(x)?"on":""}" data-act="rtag" data-v="${x}" data-dlg="1">${x}</button>`).join("")}</div></div>`;
+          ${b.core?`<div class="tags"><span class="tiny" style="font-weight:900">卡在哪裡</span>${STUCK.map(x=>`<button class="tg ${(r.tags||[]).includes(x)?"on":""}" data-act="rtag" data-v="${x}" data-dlg="1">${x}</button>`).join("")}</div>`:""}</div>`;
   layer(`<div class="overlay"><div class="dialog ${b.inj?"inj":who}" role="dialog" aria-modal="true" aria-labelledby="dd-t" style="width:min(74rem,96vw)">
     <div class="row between"><span class="row"><span class="who ${who}">${b.core?"核心議題":WHO[who][0]+"・點名回應"}</span><span class="eyebrow">情境 ${hhmm(G.t)}・建議 ${b.min} 分鐘</span></span><button data-act="rclose">✕ 先關閉</button></div>
     <h2 id="dd-t">${esc(b.title)}</h2>
@@ -843,7 +896,7 @@ function gradeHTML(){
   const sc=scoring();
   return `<div class="bigrade"><span class="L">${sc.L[0]}</span><div><div class="eyebrow">全家應變中心評等</div><h3 style="font-size:1.4rem">${sc.L[1]}・總分 ${sc.total}</h3><span class="tiny mute">S ≥ 90・A ≥ 80・B ≥ 70・C ≥ 60・D < 60；不判失敗，分數用來比較不同配置。</span></div></div>
     <div>${sc.S.map(([n,s,w,how])=>`<div class="score"><div><b>${n}</b><div class="how">權重 ${w}%</div></div><div><div class="bar"><i style="width:${s}%;background:${s>=80?"var(--green)":s>=60?"var(--blue)":s>=40?"var(--yellow)":"var(--red)"}"></i></div><div class="how">${esc(how)}</div></div><span class="pt">${s}</span></div>`).join("")}</div>
-    <details class="tiny mute"><summary style="cursor:pointer">計分標準</summary><ul style="margin:.3rem 0 0;padding-left:1.1rem"><li>社會福利最大化：依斷電風險加權（製氧機、呼吸器 ×3，疫苗 ×2，胰島素 ×1，手機 ×0.3），接住量 ÷ 已出現的需求量。</li><li>電量運用穩定度：未全黑 50＋可撐過日出 30＋最低電量維持兩成以上 20；全黑每 1 分鐘扣 1 分。</li><li>資源配置效率：缺口覆蓋 40%＋不過度動員 30%＋動員成本 30%（成本＝授權方數＋到位小時數）。</li><li>應變速度：降載時間 40＋第一個外部電源 30＋1 小時內基層通報 30。</li><li>治理與責任：取得授權書 40（開放門外後才取得得 20）＋回應有表態 40＋標出卡關原因 20。</li></ul></details>`;
+    <details class="tiny mute"><summary style="cursor:pointer">計分標準</summary><ul style="margin:.3rem 0 0;padding-left:1.1rem"><li>社會福利最大化：依斷電風險加權（製氧機、呼吸器 ×3，疫苗 ×2，胰島素 ×1，手機 ×0.3），接住量 ÷ 已出現的需求量。</li><li>電量運用穩定度：未全黑 50＋可撐過日出 30＋最低電量維持兩成以上 20；全黑每 1 分鐘扣 1 分。</li><li>資源配置效率：缺口覆蓋 40%＋不過度動員 30%＋動員成本 30%（成本＝授權方數＋到位小時數）。</li><li>應變速度：降載時間 40＋第一個外部電源 30＋1 小時內基層通報 30。</li><li>治理與責任：取得授權書 40（開放門外後才取得得 20）＋回應有表態 40＋標出卡關原因 20；明知卡關仍執行要扣分：已放置的資源卡標有卡關 −10／張，技術組選擇標有卡關卻照樣執行 −5／項，未取得授權書卻違反總部指示維持營業 −10（最多扣 40）。</li></ul></details>`;
 }
 function resultDialog(){
   const col=k=>G.d2.filter(x=>x.kind===k), stuck={}; Object.values(G.cards).forEach(c=>(c.stuck||[]).forEach(x=>stuck[x]=(stuck[x]||0)+1)); Object.values(G.rec).forEach(r=>(r.tags||[]).forEach(x=>stuck[x]=(stuck[x]||0)+1)); G.d2.filter(x=>x.kind==="lim").forEach(x=>stuck[x.cat]=(stuck[x.cat]||0)+1);
@@ -860,7 +913,11 @@ function resultDialog(){
 function toolsDialog(){
   layer(`<div class="overlay" data-act="closebg"><div class="dialog inj" role="dialog" aria-modal="true">
     <div class="row between"><h2 style="font-family:var(--f)">主持人工具</h2><button data-act="close">✕ 關閉</button></div>
-    <div class="q"><span class="lbl">③ 狀況注入（附錄九，可發多張；發布後立刻出現，先交技術組）</span><div class="stack" style="gap:.35rem">${Object.entries(INJECTS).map(([id,I])=>`<button style="text-align:left;${E().suggest===id?"border-color:var(--orange);background:var(--orange-l)":""}" data-act="inject" data-id="${id}">${G.inj[id]!=null?"✓ 已發布（"+EVENTS[G.inj[id].ev].short+"）　":"發布　"}${esc(I.title)}　<span class="tiny mute">建議 ${esc(I.suggest)}${E().suggest===id?"・現在":""}</span></button>`).join("")}</div></div>
+    <div class="cols2"><div class="q"><span class="lbl">③ 狀況卡（附錄九；點一下發布，已發布的再點一下撤回）</span><div class="stack" style="gap:.3rem">${Object.entries(INJECTS).map(([id,I])=>`<button style="text-align:left;font-size:.9rem;${E().suggest===id?"border-color:var(--orange);background:var(--orange-l)":""}" data-act="inject" data-id="${id}">${G.inj[id]!=null?"✓ 已發布（"+EVENTS[G.inj[id].ev].short+"，點一下撤回）　":"發布　"}${esc(I.title)}　<span class="tiny mute">建議 ${esc(I.suggest)}${E().suggest===id?"・現在":""}</span></button>`).join("")}</div>
+      <details><summary class="small" style="cursor:pointer;font-weight:700">＋ 新增狀況卡</summary><div class="form"><label>標題<input id="x-it" placeholder="例：里長帶來 30 位長者"></label><label>情境文字<textarea id="x-is" rows="2"></textarea></label><div class="g2"><label>提問<input id="x-iq" placeholder="例：門市接得住嗎？"></label><label>主答組<select id="x-iw"><option value="tech">技術組</option><option value="soc" selected>社會組</option><option value="gov">治理組</option></select></label></div><button class="b-orange" data-act="addinj">新增狀況卡</button></div></details></div>
+    <div class="q"><span class="lbl">資源卡（控制組可中途抽走或加入）</span><div class="sug">${CARDS.filter(c=>c.kind!=="base").map(c=>`<button class="${isOff(c.id)?"":"sel"}" data-act="cardoff" data-id="${c.id}">${isOff(c.id)?"✕ 已抽走":"✓"} ${c.id} ${esc(c.name)}</button>`).join("")}</div>
+      <details><summary class="small" style="cursor:pointer;font-weight:700">＋ 新增資源卡</summary><div class="form"><div class="g2"><label>名稱<input id="x-name" placeholder="例：外縣市支援電動車"></label><label>類型<select id="x-kind"><option>電力</option><option>服務</option></select></label></div><div class="g3"><label>可用度數<input id="x-e" type="number" placeholder="40"></label><label>幾分鐘後生效<input id="x-lead" type="number" placeholder="60"></label><label>授權單位<input id="x-auth" placeholder="車主"></label></div><label>使用條件<input id="x-limit" placeholder="例：須車主同意"></label><button class="b-blue" data-act="addcard">加入資源卡</button></div></details>
+      <span class="lbl" style="margin-top:.4rem">⟲ 回溯修正（回到已進行過的時間點修改決定）</span><div class="sug">${EVENTS.map((e,i)=>i<=G.maxEv?`<button class="${i===G.ev?"sel":""}" data-act="rewind" data-i="${i}">${esc(e.short)}</button>`:"").join("")}</div></div></div>
     <div class="cols2"><div class="q"><span class="lbl">示範門市儲能</span><div class="choice"><button class="${G.cap===13.5?"sel":""}" data-act="cap" data-v="13.5">一套 13.5 度</button><button class="${G.cap===40?"sel":""}" data-act="cap" data-v="40">大型門市 40 度</button></div></div>
     <div class="q"><span class="lbl">估算情境</span><div class="choice"><button class="${!best()?"sel":""}" data-act="scen" data-v="worst">最差情況</button><button class="${best()?"sel":""}" data-act="scen" data-v="best">最佳情況</button></div></div></div>
     <div class="q"><span class="lbl">紀錄</span><div class="row"><button data-act="export" data-f="csv">下載 CSV</button><button data-act="export" data-f="json">下載 JSON</button><button data-act="reset" style="color:var(--red);border-color:var(--red)">重新開始</button></div></div>
@@ -883,7 +940,7 @@ function playBlackout(done){
   st(()=>{ $("#bk2").textContent="20 毫秒內與電網解聯，改由店內儲能供電"; },3900);
   st(()=>{ d.style.opacity=0; },5800); st(()=>{ d.remove(); done&&done(); },7000);
 }
-const COACH=[["#flow","① 右邊：這一步","藍框是本輪目標。一次只出現一件事。黃色框是要選的地方：請技術組決定，主持人代按。沒完成的會顯示紅字，不能推進。"],["#scene","② 門市圖板","左上角是可用電度數與維持小時數。點招牌、空調、冷藏櫃、電動車、換電站都可以操作。"],["#blocks","③ 設備色塊","降載只在這裡操作：點一下開關整組設備。"],["#tray","④ 資源卡與需求卡","資源卡依提出、判定、放置；放置後顯示生效時間。需求卡是門外的人。"],["#nextbtn","⑤ 推進情境時間","這一輪全部完成後才能按，時鐘與電量會一起快轉。"]];
+const COACH=[["#flow","① 右邊：這一步","藍框是本輪目標。一次只出現一件事。黃色框是要選的地方：請技術組決定，主持人代按。沒完成的會顯示紅字，不能推進。"],["#scene","② 門市圖板","左上角是可用電度數與維持小時數。點招牌、空調、冷藏櫃、電動車、換電站都可以操作。"],["#blocks","③ 設備色塊","降載只在這裡操作：點一下開關整組設備。"],["#tray","④ 資源卡與需求卡","資源卡依提出、判定、放置；放置後顯示生效時間。需求卡是門外的人。控制組可在「主持人工具」中途抽走或加入資源卡、狀況卡，也能回溯修正。"],["#nextbtn","⑤ 推進情境時間","這一輪全部完成後才能按，時鐘與電量會一起快轉。"]];
 function coach(i=0){
   if(i>=COACH.length){ closeLayer(); G.coached=true; save(); return; }
   const [s,t,d]=COACH[i], el=$(s); if(!el){ coach(i+1); return; }
@@ -916,7 +973,7 @@ function applyChoice(b,val){
 
 /* ---------- 事件 ---------- */
 let tt; function toast(s,cls){ let e=$(".toast"); if(!e){ e=document.createElement("div"); e.setAttribute("role","status"); document.body.appendChild(e);} e.className="toast "+(cls||""); e.textContent=s; e.hidden=false; clearTimeout(tt); tt=setTimeout(()=>e.hidden=true,4200); }
-const setRec=(k,p)=>{ G.rec[k]={...(G.rec[k]||{}),...p,t:G.t}; save(); };
+const setRec=(k,p)=>{ G.rec[k]={...(G.rec[k]||{}),...p,t:G.t,ts:new Date().toLocaleString("zh-TW",{hour12:false})}; save(); };
 const keepText=()=>{ const tx=$("#d-text"); if(tx) setRec(bkey(),{text:tx.value}); };
 function saveCard(id,p){ const c=G.cards[id]||{}; G.cards[id]={...c,...p,ans:{...(c.ans||{}),...(p.ans||{})}}; save(); }
 document.addEventListener("click",ev=>{
@@ -928,7 +985,7 @@ document.addEventListener("click",ev=>{
     case "beatnext": beatNext(); break;
     case "gobeat": { const j=+d.j; if(j===G.beat) break; if(j>G.beat&&!bsDoneTo(j)){ toast("請先完成目前這一步","bad"); break; } snapshot(); G.beat=j; startBeat(); save(); render(); enterBeat(); break; }
     case "advance": advance(); break;
-    case "pick": { const r=G.rec[k]||{}; let v; if(beat.multi){ const s=new Set(r.value||[]); if(d.v==="none"){ s.clear(); s.add("none"); } else { s.delete("none"); s.has(d.v)?s.delete(d.v):s.add(d.v); } v=[...s]; } else v=d.v; setRec(k,{value:v}); applyChoice(beat,v); render(); break; }
+    case "pick": { if(isOff(d.v)){ toast("控制組已抽走這張資源卡","bad"); break; } const r=G.rec[k]||{}; let v; if(beat.multi){ const s=new Set(r.value||[]); if(d.v==="none"){ s.clear(); s.add("none"); } else { s.delete("none"); s.has(d.v)?s.delete(d.v):s.add(d.v); } v=[...s]; } else v=d.v; setRec(k,{value:v}); applyChoice(beat,v); render(); break; }
     case "shedok": setRec(k,{done:true,tiers:{...G.tiers}}); render(); toast("降載已確認"); break;
     case "rtag": { keepText(); const r=G.rec[k]||{}, s=new Set(r.tags||[]); s.has(d.v)?s.delete(d.v):s.add(d.v); setRec(k,{tags:[...s]}); d.dlg?respondDialog():render(); break; }
     case "respond": maker=null; draft={}; spk={g:WHO[beat.who]&&["tech","soc","gov"].includes(beat.who)?beat.who:"soc",role:""}; respondDialog(); break;
@@ -938,7 +995,23 @@ document.addEventListener("click",ev=>{
     case "stdel": { keepText(); const r=G.rec[k]||{}, list=stancesOf(r).slice(); list.splice(+d.i,1); setRec(k,{stances:list,stance:[...new Set(list.map(x=>x.s))]}); respondDialog(); break; }
     case "spkg": keepText(); spk={g:d.g,role:""}; respondDialog(); break;
     case "spkr": keepText(); spk={...spk,role:spk.role===d.v?"":d.v}; respondDialog(); break;
-    case "dpick": { keepText(); const p=beat.pick, r=G.rec[k]||{}; let v; if(p.multi){ const s=new Set(r.value||[]); s.has(d.v)?s.delete(d.v):s.add(d.v); v=[...s]; } else v=r.value===d.v?null:d.v; setRec(k,{value:v}); respondDialog(); break; }
+    case "dpick": { keepText(); const p=beat.pick, r=G.rec[k]||{}; let v; if(p.multi){ const s=new Set(r.value||[]); s.has(d.v)?s.delete(d.v):s.add(d.v); v=[...s]; } else v=r.value===d.v?null:d.v; setRec(k,{value:v});
+      if(p.apply==="mode"&&v){ if(v.startsWith("A")){ setState({tiers:{1:true,2:true,3:false}}); toast("設備色塊已改為：一級＋二級（維持營業）","good"); } else if(v.startsWith("B")){ setState({tiers:{1:true,2:false,3:false}}); toast("設備色塊已改為：只開一級（縮減營業）","good"); } }
+      if(p.apply==="hq"){ const prev=r.prevState||{tiers:{...G.tiers},served:{...G.served}};
+        if(v&&v.startsWith("照總部")){ setRec(k,{prevState:prev}); setState({tiers:{...G.tiers,2:false},served:{}}); G.flags.defyHQ=false; toast("已暫停營業：二級對外服務關閉，門外需求停止接住","bad"); }
+        else { if(r.prevState){ setState(r.prevState); setRec(k,{prevState:null}); } G.flags.defyHQ=!!v; if(v&&!live("R1-6",G.t)) toast("維持對外服務，但沒有授權書：違反總部指示的責任未明","bad"); }
+        save(); }
+      render(); respondDialog(); break; }
+    case "rev": setRec(k,{done:true,mode:d.v,tiers:{...G.tiers},placed:CARDS.filter(c=>planned(c.id)).map(c=>c.id)}); render(); toast(d.v==="keep"?"已記錄：維持原配置":"已記錄修正後的配置","good"); break;
+    case "hc": { const n=NEEDS.find(x=>x.id===d.k), q=Math.max(0,Math.min(n.qty,(G.served[d.k]||0)+(+d.d))); setState({served:{...G.served,[d.k]:q}}); render(); break; }
+    case "hcok": setRec(k,{done:true,hc:true,n5:G.served.N5||0,n6:G.served.N6||0}); render(); toast(`已記錄：接住製氧機 ${G.served.N5||0} 台、呼吸器 ${G.served.N6||0} 台`,"good"); break;
+    case "rewind": { const i=+d.i; if(i===G.ev) break; if(i>G.maxEv) break; snapshot(); goTo(i,0); toast(i<G.maxEv?`回溯修正：回到 ${EVENTS[i].short}`:"已回到最新進度","good"); break; }
+    case "unrewind": snapshot(); goTo(G.maxEv,G.maxBeat); toast("已回到最新進度","good"); break;
+    case "cardoff": { const id=d.id; G.off={...G.off}; if(G.off[id]) delete G.off[id]; else { G.off[id]=true; if(planned(id)) saveCard(id,{liveAt:null,placedAt:null}); } save(); render(); toolsDialog(); toast(G.off[id]?`控制組已抽走 ${id}`:`控制組已放回 ${id}`,"good"); break; }
+    case "addcard": { const v=id=>($("#"+id)?.value||"").trim(), name=v("x-name"); if(!name){ toast("請填資源卡名稱","bad"); break; } const e=+v("x-e")||0, lead=+v("x-lead")||0, en=v("x-kind")==="電力";
+      const id="RX-"+((G.xcards||[]).length+1); G.xcards=[...(G.xcards||[]),{ id, name, kind:en?"energy":"service", energy:[e,e], lead:[lead,lead], cost:1, time:lead?`${lead} 分鐘`:"立即", spec:en?`約 ${e} 度（控制組設定）`:"控制組設定", limit:v("x-limit")||"控制組新增", auth:v("x-auth")||"未指定", act:"使用", custom:true, qs:[] }]; syncCustom(); save(); render(); toolsDialog(); toast(`已加入資源卡 ${id} ${name}`,"good"); break; }
+    case "addinj": { const v=id=>($("#"+id)?.value||"").trim(), t=v("x-it"); if(!t){ toast("請填狀況卡標題","bad"); break; } const id="X"+(Object.keys(G.xinj||{}).length+1), who=v("x-iw")||"soc";
+      G.xinj={...(G.xinj||{}),[id]:{ title:`控制組狀況卡 ${id}　${t}`, suggest:"控制組新增", story:v("x-is")||t, custom:true, beats:[{ type:"respond", who, loop:4, min:3, title:v("x-iq")||"請回應這個狀況" }] }}; syncCustom(); save(); toolsDialog(); toast(`已新增狀況卡 ${id}，點一下就能發布`,"good"); break; }
     case "sugg": { keepText(); const r=G.rec[k]||{}, s=new Set(r.sugg||[]); s.has(d.v)?s.delete(d.v):s.add(d.v); setRec(k,{sugg:[...s]}); respondDialog(); break; }
     case "cards": maker=null; draft={}; cardsDialog(); break;
     case "sugfill": { const o=cardSuggestions()[+d.i]; if(!o) break; maker=o.kind; draft={...o.f,_sug:o.label}; cardsDialog(); break; }
@@ -989,8 +1062,8 @@ document.addEventListener("click",ev=>{
     case "result": resultDialog(); break;
     case "walltab": wallTab=d.k; resultDialog(); break;
     case "export": exportData(d.f); break;
-    case "back": if(G.history.length){ const h=G.history.pop(), keep=G.history; G={...JSON.parse(h),history:keep}; startBeat(); save(); closeLayer(); render(); } break;
-    case "reset": if(b.dataset.ok){ try{ localStorage.removeItem(KEY); }catch(e){} G=fresh(); typed={}; closeLayer(); render(); begin(); } else { b.dataset.ok="1"; b.textContent="確定清除全部紀錄並重新開始？"; } break;
+    case "back": if(G.history.length){ const h=G.history.pop(), keep=G.history; G={...JSON.parse(h),history:keep}; syncCustom(); startBeat(); save(); closeLayer(); render(); } break;
+    case "reset": if(b.dataset.ok){ try{ localStorage.removeItem(KEY); }catch(e){} G=fresh(); syncCustom(); typed={}; closeLayer(); render(); begin(); } else { b.dataset.ok="1"; b.textContent="確定清除全部紀錄並重新開始？"; } break;
     case "tpause": if(G.pausedAt){ G.beatStart+=Date.now()-G.pausedAt; G.pausedAt=null; } else G.pausedAt=Date.now(); save(); render(); break;
     case "tplus": G.beatStart+=60000; warned=false; save(); tickTimer(); break;
     case "treset": startBeat(); save(); render(); break;
@@ -1014,18 +1087,22 @@ function exportData(f){
   const stamp=new Date().toISOString().slice(0,16).replace(/[-:T]/g,""); let data,name,type;
   if(f==="json"){ const {history,...r}=G; data=JSON.stringify({...r,score:scoring(),exportedAt:new Date().toISOString()},null,2); name=`全家店長D1_${stamp}.json`; type="application/json"; }
   else{
-    const L=[["類別","情境時間","誰","題目／項目","選擇／表態","內容","卡關原因"]];
-    EVENTS.forEach((e,i)=>beatsOf(i).forEach((b,j)=>{ const r=G.rec[bkey(i,j)]; if(!r) return;
-      if(b.type==="choice"){ const vals=b.multi?(r.value||[]):[r.value]; L.push(["技術組選擇",hhmm(e.t),WHO[b.who][0],b.ask,vals.map(x=>b.opts.find(o=>o[0]===x)?.[1]||x).join("、"),r.note||"",(r.tags||[]).join("、")]); }
-      if(b.type==="shed"&&r.done) L.push(["技術組降載",hhmm(e.t),"技術組","降到哪一組",TIERS.filter(x=>r.tiers?.[x.t]!==false).map(x=>x.name).join("＋"),r.note||"",""]);
-      if(b.type==="respond") L.push([b.core?"核心議題":"回應與提問",hhmm(e.t),WHO[b.who][0],b.title,[stancesOf(r).map(x=>spkName(x)+"："+stText(x.s)).join("；"),Array.isArray(r.value)?r.value.join("、"):(r.value||""),(r.four||[]).length?`找不到：${r.four.join("、")}`:"",(r.sugg||[]).length?`回答：${r.sugg.join("、")}`:""].filter(Boolean).join("｜"),[r.text,r.fourOther&&("其他找不到的人："+r.fourOther)].filter(Boolean).join("｜"),(r.tags||[]).join("、")]);
-      if(b.type==="observe"&&r.note) L.push(["治理組觀察",hhmm(e.t),"治理組",b.title,"",r.note,""]); }));
-    CARDS.forEach(d=>{ const c=G.cards[d.id]; if(!c) return; L.push(["資源卡",c.placedAt!=null?hhmm(c.placedAt):"","技術組",`${d.id} ${d.name}`,c.liveAt!=null?`${hhmm(c.liveAt)} 生效`:(isStuck(d.id)?"卡關":c.skip?"保留":"未使用"),Object.entries(c.ans||{}).map(([k,v])=>`${k}:${Array.isArray(v)?v.join("、"):v}`).join("｜")+(c.verdict?`｜技術判定：${c.verdict}${c.vnote?`（${c.vnote}）`:""}`:""),(c.stuck||[]).join("、")]); });
-    NEEDS.forEach(n=>{ if(G.served[n.id]) L.push(["需求卡","","",n.title,`接住 ${G.served[n.id]}／${n.qty}`,"",""]); });
-    serviceRows().forEach(r=>L.push(["門市服務量表",hhmm(G.t),"",r.c[0],`${r.c[1]}｜${r.c[2]}｜${r.c[3]}`,`前提：${G.svc?.[r.id]?.pre??r.pre}｜是否存在：${G.svc?.[r.id]?.ex??r.ex}`,""]));
-    G.d2.forEach(x=>L.push([{need:"第二階段需求卡",sup:"第二階段供給卡",lim:"第二階段限制卡",open:"開放問題"}[x.kind],x.at,x.g,x.kind==="need"?x.target:x.kind==="sup"?`${x.provider}・${x.type}`:x.kind==="lim"?`${x.cat}・${x.rel}`:"",x.kind==="need"?`${x.text}｜${x.qty} ${x.unit}｜${x.tier}｜${x.due}`:x.kind==="sup"?`${x.cap} ${x.unit}｜${x.when}｜需${x.auth}`:x.text,x.kind==="need"?(x.kwh?`每日 ${x.kwh} 度`:""):x.kind==="sup"?x.cond:x.kind==="lim"?`${x.solver}｜${x.sug}`:"",x.kind==="lim"?x.cat:""]));
-    const sc=scoring(); L.push(["全家應變中心評等",hhmm(G.t),"","總評",`${sc.L[0]} 級・${sc.L[1]}`,`${sc.total} 分`,""]); sc.S.forEach(([n,s,w,how])=>L.push(["評等指標",hhmm(G.t),"",n,`${s} 分（權重 ${w}%）`,how,""]));
-    G.log.forEach(l=>L.push(["用電紀錄",hhmm(l.t),"","設備色塊",TIERS.filter(x=>l.tiers?.[x.t]!==false).map(x=>x.name).join("＋")||"全關",`負載 ${fmt1(loadOf(l))} kW`,""]));
+    const L=[["類別","情境時間","實際紀錄時間","組別","身份","題目／項目","選擇／表態","內容","卡關原因"]];
+    const R=(cat,t,ts,g,role,item,ch,ct,st)=>L.push([cat,t,ts||"",g||"",role||"",item,ch,ct,st||""]);
+    EVENTS.forEach((e,i)=>beatsOf(i).forEach((b,j)=>{ const r=G.rec[bkey(i,j)]; if(!r) return; const tm=hhmm(r.t??e.t);
+      if(b.type==="choice"){ const vals=b.multi?(r.value||[]):[r.value]; R("技術組選擇",tm,r.ts,WHO[b.who][0],"",b.ask,vals.map(x=>b.opts.find(o=>o[0]===x)?.[1]||x).join("、"),r.note||"",(r.tags||[]).join("、")); }
+      if(b.type==="shed"&&r.done) R("技術組降載",tm,r.ts,"技術組","","降到哪一組",TIERS.filter(x=>r.tiers?.[x.t]!==false).map(x=>x.name).join("＋"),r.note||"","");
+      if(b.type==="revise"&&r.done) R("技術組修正",tm,r.ts,"技術組","",b.title,r.mode==="keep"?"維持原配置":"已修正配置",`設備：${TIERS.filter(x=>r.tiers?.[x.t]!==false).map(x=>x.name).join("＋")}｜資源：${(r.placed||[]).join("、")||"無"}${r.note?"｜"+r.note:""}`,"");
+      if(b.type==="homecare"&&r.done) R("居家維生",tm,r.ts,"技術組","","巡守隊回報後接住幾位",`製氧機 ${r.n5}／12、呼吸器 ${r.n6}／6`,r.note||"","");
+      if(b.type==="respond"){ R(b.core?"核心議題":"回應與提問",tm,r.ts,WHO[b.who][0],"",b.title,[Array.isArray(r.value)?r.value.join("、"):(r.value||""),(r.four||[]).length?`找不到：${r.four.join("、")}`:"",(r.sugg||[]).length?`回答：${r.sugg.join("、")}`:""].filter(Boolean).join("｜"),r.text||"",(r.tags||[]).join("、"));
+        stancesOf(r).forEach(x=>R("表態",tm,r.ts,x.g?WHO[x.g][0]:"",x.role,b.title,stText(x.s),"",x.s==="stuck"?(r.tags||[]).join("、"):"")); }
+      if(b.type==="observe"&&r.note) R("治理組觀察",tm,r.ts,"治理組","",b.title,"",r.note,""); }));
+    CARDS.forEach(d=>{ const c=G.cards[d.id]; if(!c) return; R("資源卡",c.placedAt!=null?hhmm(c.placedAt):"","","技術組","",`${d.id} ${d.name}${d.custom?"（控制組新增）":""}`,isOff(d.id)?"控制組已抽走":c.liveAt!=null?`${hhmm(c.liveAt)} 生效`:(isStuck(d.id)?"卡關":c.skip?"保留":"未使用"),Object.entries(c.ans||{}).map(([k,v])=>`${k}:${Array.isArray(v)?v.join("、"):v}`).join("｜")+(c.verdict?`｜技術判定：${c.verdict}${c.vnote?`（${c.vnote}）`:""}`:""),(c.stuck||[]).join("、")); });
+    NEEDS.forEach(n=>{ if(G.served[n.id]) R("需求卡","","","","",n.title,`接住 ${G.served[n.id]}／${n.qty}`,"",""); });
+    serviceRows().forEach(r=>R("門市服務量表",hhmm(G.t),"","","",r.c[0],`${r.c[1]}｜${r.c[2]}｜${r.c[3]}`,`前提：${G.svc?.[r.id]?.pre??r.pre}｜是否存在：${G.svc?.[r.id]?.ex??r.ex}`,""));
+    G.d2.forEach(x=>R({need:"第二階段需求卡",sup:"第二階段供給卡",lim:"第二階段限制卡",open:"開放問題"}[x.kind],x.at,"",x.g,"",x.kind==="need"?x.target:x.kind==="sup"?`${x.provider}・${x.type}`:x.kind==="lim"?`${x.cat}・${x.rel}`:"",x.kind==="need"?`${x.text}｜${x.qty} ${x.unit}｜${x.tier}｜${x.due}`:x.kind==="sup"?`${x.cap} ${x.unit}｜${x.when}｜需${x.auth}`:x.text,x.kind==="need"?(x.kwh?`每日 ${x.kwh} 度`:""):x.kind==="sup"?x.cond:x.kind==="lim"?`${x.solver}｜${x.sug}`:"",x.kind==="lim"?x.cat:""));
+    const sc=scoring(); R("全家應變中心評等",hhmm(G.t),"","","","總評",`${sc.L[0]} 級・${sc.L[1]}`,`${sc.total} 分`,""); sc.S.forEach(([n,sv,w,how])=>R("評等指標",hhmm(G.t),"","","",n,`${sv} 分（權重 ${w}%）`,how,""));
+    logs().slice(1).forEach(l=>R("用電紀錄",hhmm(l.t),"","","","設備色塊",TIERS.filter(x=>l.tiers?.[x.t]!==false).map(x=>x.name).join("＋")||"全關",`負載 ${fmt1(loadOf(l))} kW`,""));
     data="﻿"+L.map(r=>r.map(csv).join(",")).join("\n"); name=`全家店長D1_${stamp}.csv`; type="text/csv";
   }
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([data],{type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); toast("已下載 "+name,"good");
