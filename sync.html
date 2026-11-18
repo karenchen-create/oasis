@@ -320,6 +320,15 @@ select{background:#0d151b;border:1px solid var(--line);border-radius:10px;paddin
 .thread{border-left:3px solid var(--tech);padding:4px 0 4px 10px;display:grid;gap:3px;font-size:13px;margin:4px 0}
 .thread .th-q{color:#ffcf99}
 .thread .th-a{color:var(--tech)}
+.tabs.n5{grid-template-columns:repeat(5,1fr)}
+.tabs.n5 button{padding:8px 2px;font-size:14px}
+.qa{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;gap:6px;background:var(--panel2)}
+.qa.open{border-color:var(--yellow)}
+.qa textarea{min-height:44px}
+.qawall{display:grid;gap:8px}
+.qawall .qi{border-top:1px dashed var(--line);padding-top:6px;display:grid;gap:2px}
+.qawall .ans{font-size:14px}
+.askbtn{border-style:dashed}
 .retbox{border:1px dashed var(--line);border-radius:10px;padding:6px 10px}
 .retbox summary{cursor:pointer;font-size:13.5px;color:var(--muted)}
 .retbox[open]{display:grid;gap:8px}
@@ -570,15 +579,18 @@ function pipe(id){
   return { steps:s, gate, x, who, p, v, u, a, ret, ver };
 }
 function threadHTML(id){
-  const p=ST("tech").prop?.[id]; if(!p) return "";
-  const hist=[...(ST("tech").hist?.[id]||[]), p], rets=retsOf(id,null); if(!rets.length && hist.length<2) return "";
-  return `<div class="thread">${hist.map(h=>{ const v=verOf(h); const rs=rets.filter(r=>r.ver===v); const nx=hist.find(x=>verOf(x)===v+1);
+  const sa=allAsks().filter(a=>a.src===id);
+  const askH=sa.map(a=>{ const r=replyOf(a); return `<div class="th-q">${gtag(a.by)} 提問 → ${gtag(a.to)}：${esc(a.q)}</div>${r?.text?`<div class="th-a">${gtag(a.to)} 回答：${esc(r.text)}</div>`:`<div class="th-a dim">（等待回答）</div>`}`; }).join("");
+  const p=ST("tech").prop?.[id]; if(!p) return askH? `<div class="thread">${askH}</div>` : "";
+  const hist=[...(ST("tech").hist?.[id]||[]), p], rets=retsOf(id,null); if(!rets.length && hist.length<2 && !askH) return "";
+  return `<div class="thread">${askH}${hist.length<2&&!rets.length?"":hist.map(h=>{ const v=verOf(h); const rs=rets.filter(r=>r.ver===v); const nx=hist.find(x=>verOf(x)===v+1);
     return `<div class="th-v"><b>第${v}版</b> <span class="dim">${hm(h.at)}</span> ${(h.safe||[]).map(esc).join("、")}｜${esc(h.rule||"")}${h.note?"｜"+esc(h.note):""}</div>${rs.map(r=>`<div class="th-q">${gtag(r.by)} 提問${(r.tags||[]).length?"［"+r.tags.map(esc).join("、")+"］":""}：${esc(r.q)}</div>`).join("")}${nx?.reply?`<div class="th-a">${gtag("tech")} 回覆：${esc(nx.reply)}</div>`:""}`; }).join("")}</div>`;
 }
 function retFormHTML(g,def){
   const pp=pipe(def.id), left=retLimit()-roundsUsed(def.id), k="r"+g+def.id, dr=S.draft[k]||{ tags:[] };
-  if(left<=0) return `<div class="small muted">已達退回上限（${retLimit()} 次），請直接決定。</div>`;
-  return `<details class="retbox"><summary>提問／退回技術組修正（還可退回 ${left} 次）</summary>
+  const ask=`<div class="row"><button class="small askbtn" data-act="askfor" data-id="${def.id}">💬 只提問技術組（不改方案）</button></div>`;
+  if(left<=0) return ask+`<div class="small muted">已達退回上限（${retLimit()} 次），請直接決定。</div>`;
+  return ask+`<details class="retbox"><summary>退回技術組修正方案（還可退回 ${left} 次）</summary>
     <div class="tags"><span class="dim small">卡在</span>${STUCK.map(t=>`<button class="tg ${(dr.tags||[]).includes(t)?"on":""}" data-act="rdraft" data-g="${g}" data-id="${def.id}" data-v="${t}">${t}</button>`).join("")}</div>
     <input data-input="rq" data-g="${g}" data-id="${def.id}" placeholder="你的問題或評價，例如：夜間誰看守？" value="${esc(dr.q||"")}">
     <div class="row"><button class="primary" data-act="retgo" data-g="${g}" data-id="${def.id}"${opDis(g)}>退回技術組</button></div></details>`;
@@ -694,8 +706,18 @@ function todo(g){
   if(g==="gov" && ST("gov").mode?.v===MODES[1] && ST("gov").letter?.at==null) out.push({ t:"簽發緊急授權書", tab:"auth" });
   if(g==="soc"){ const miss=R.unmet.reduce((s,n)=>s+n.miss,0); if(miss) out.push({ t:`門外還有 ${miss} 個需求沒接住`, tab:"need" }); if(T>=150 && !ST("soc").r17?.at && ST("soc").r17?.at!==0) out.push({ t:"派巡守隊找居家使用者", tab:"src" }); }
   qsFor(g).filter(q=>!answered(g,q) && !(h && h.id==="h1" && ["1A-1","1A-3"].includes(q.id))).forEach(q=>out.push({ t:"回答："+q.text, tab:"dec" }));
+  unanswered(g).forEach(a=>out.push({ t:`回答${GROUPS[a.by].name}的提問`, tab:"qa" }));
+  if(clashOpen(g)!=null) out.push({ t:"回答交鋒題", tab:"qa" });
   return out;
 }
+/* ---------- 問答：三組互相提問（只問、不改方案）＋交鋒題 ---------- */
+const srcName = id => allSources().find(s=>s.id===id)?.name || id;
+const allAsks = () => GKEYS.flatMap(g=>(ST(g).asks||[]).map(a=>({ ...a, by:g }))).sort((a,b)=>a.ts-b.ts);
+const replyOf = a => ST(a.to).replies?.[a.id] || null;
+const inbox = g => allAsks().filter(a=>a.to===g);
+const unanswered = g => inbox(g).filter(a=>!replyOf(a)?.text);
+const clashList = () => { const c=S.ctl||{}; return [...new Set([...(c.clashShown||[]), ...(c.clash!=null?[c.clash]:[])])].sort((a,b)=>a-b); };
+const clashOpen = g => { const i=S.ctl?.clash; return i!=null && !ST(g).clashAns?.[i]?.text ? i : null; };
 const hostTodo = () => allSources().filter(s=>pipe(s.id).who==="host");
 
 /* ============================================================
@@ -925,7 +947,7 @@ function coachList(g){
   if(g==="soc"){
     if(h?.id==="h1" && !ST("soc").answers?.["1A-1"]?.choice) add({ pop:true, id:"s-mode", title:"決定營運模式", text:"17:40 了，總部聯絡不上。選 A 維持營業（一級＋二級）、B 縮減營業（只開一級）或 C 照總部程序，系統會照你的選擇調整用電。三組都完成，時間才會繼續。", tab:"dec", target:"q-1A-1" });
     if(T>=LOCK_UNTIL && ST("soc").tiers?.[3]!==false && !(h?.id==="h1")) add({ id:"s-tier3", title:"關掉三級設備", text:`冷氣、招牌、咖啡機還開著，約 10.5 kW。照現在用電 ${R.ok?"":hm(R.firstDark)+" 就會電量耗盡"}。到「用電」把三級關掉。`, tab:"power", target:"tier-3" });
-    allSources().forEach(def=>{ const pp=pipe(def.id); if(pp.who==="soc") add({ pop:true, id:"s-use-"+def.id+"-"+pp.v.at, title:`要不要使用「${def.name}」？`, text:`技術組提出了「${def.name}」方案（${(pp.p.safe||[]).join("、")}；${pp.p.rule}），主持人判定「${pp.v.v}」。現在由你決定要不要用；用了以後還要治理組授權，電才會來。有疑問可以「提問／退回技術組修正」。`, tab:"src", target:"src-"+def.id }); });
+    allSources().forEach(def=>{ const pp=pipe(def.id); if(pp.who==="soc") add({ pop:true, id:"s-use-"+def.id+"-"+pp.v.at, title:`要不要使用「${def.name}」？`, text:`技術組提出了「${def.name}」方案（${(pp.p.safe||[]).join("、")}；${pp.p.rule}），主持人判定「${pp.v.v}」。現在由你決定要不要用；用了以後還要治理組授權，電才會來。有疑問可以按「只提問」；要技術組改方案才按「退回」。`, tab:"src", target:"src-"+def.id }); });
     const open=R.unmet.filter(n=>{ const oa=openAt(LOADS[n.kind].scope); return oa!=null && oa<=T; });
     const lastLog=Math.max(-1,...(ST("soc").log||[]).map(l=>l.t)), newest=Math.max(...open.map(n=>n.at),-1);
     if(open.length) add({ low: lastLog>=newest, id:"s-serve-"+open.map(n=>n.id).join("-"), title:"門外有人在等", text:`${open.map(n=>`${n.who}・${LOADS[n.kind].name} ${n.miss}`).join("、")}。按＋接住；需求條會變長，看看供給還夠不夠撐到日出。`, tab:"need", target:"need-"+open[0].id });
@@ -942,6 +964,8 @@ function coachList(g){
     const l=ST("gov").letter; if(ST("gov").mode?.v===MODES[1] && l?.at!=null){ const miss=R.unmet.filter(n=>!(l.scope||[]).includes(LOADS[n.kind].scope)); if(miss.length) add({ id:"g-scope-"+miss.map(n=>n.id).join("-"), title:"授權書範圍不夠", text:`門外的${miss.map(n=>LOADS[n.kind].name).join("、")}需要「${[...new Set(miss.map(n=>LOADS[n.kind].scope))].join("、")}」，授權書沒有涵蓋，社會組接不了。要不要撤回重簽？`, tab:"auth", target:"letter" }); }
   }
   qs.forEach(q=>add(qItem(q)));
+  unanswered(g).forEach(a=>add({ low:true, id:"ask-"+a.id, title:`${GROUPS[a.by].name}問你們`, text:a.q, tab:"qa", target:"ask-"+a.id }));
+  { const ci=clashOpen(g); if(ci!=null) add({ low:true, id:"clash-"+ci, title:"交鋒題：請回答", text:CLASHES[ci], tab:"qa", target:"clash-"+ci }); }
   return out.sort((a,b)=>(a.low?1:0)-(b.low?1:0));
 }
 function hostSteps(){
@@ -1105,9 +1129,9 @@ function checkTurn(me){
 
 /* ---------- 各組手機 ---------- */
 const TABS = {
-  soc:[["power","用電"],["src","電源"],["need","需求"],["dec","決策"]],
-  tech:[["demo","示範"],["src","電源方案"],["sec","通訊資安"],["dec","決策"]],
-  gov:[["auth","授權"],["dec","決策"]],
+  soc:[["power","用電"],["src","電源"],["need","需求"],["dec","決策"],["qa","問答"]],
+  tech:[["demo","示範"],["src","電源方案"],["sec","通訊資安"],["dec","決策"],["qa","問答"]],
+  gov:[["auth","授權"],["dec","決策"],["qa","問答"]],
   obs:[["flow","流程"]],
 };
 function viewPlay(){
@@ -1119,7 +1143,7 @@ function viewPlay(){
   const badge={}; td.forEach(x=>badge[x.tab]=(badge[x.tab]||0)+1);
   let body;
   if(S.ctl.seg<0) body=`<div class="panel">等待主持人開始</div>`;
-  else body = ({ power:powerTab, src: g==="tech"? techSrcTab : socSrcTab, need:needTab, dec:decTab, sec:secTab, auth:authTab, flow:flowTab, demo:()=>`<div data-live="demo"></div>` })[S.tab](g);
+  else body = ({ power:powerTab, src: g==="tech"? techSrcTab : socSrcTab, need:needTab, dec:decTab, qa:qaTab, sec:secTab, auth:authTab, flow:flowTab, demo:()=>`<div data-live="demo"></div>` })[S.tab](g);
   return `<div class="wrap">${banners()}
     <div class="hud"><span class="clock" data-live="clock">17:30</span><span class="pill" data-live="commpill"></span>
       ${GKEYS.filter(isOp).length>1 ? GKEYS.filter(isOp).map(k=>`<button class="pill ${k===g?"sel":""}" data-act="switchg" data-g="${k}" style="padding:4px 12px">${GROUPS[k].name}</button>`).join("") : `<span class="pill">${g==="obs"?"觀看":gtag(g)}・${esc(S.me.name)}</span>`}
@@ -1246,6 +1270,48 @@ function authTab(){
   const modeFirst = !m && T>=90;
   return `<div class="stack">${modeFirst? modeCard+letterCard : ""}<div class="eyebrow">外部電源授權</div>${src}${modeFirst? "" : modeCard+letterCard}</div>`;
 }
+function clashOthers(i, g){
+  return GKEYS.filter(k=>k!==g).map(k=>{ const x=ST(k).clashAns?.[i]; return `<div class="small">${gtag(k)} ${x?.text? esc(x.text) : `<span class="dim">尚未回答</span>`}</div>`; }).join("");
+}
+function qaTab(g){
+  const op=isOp(g), others=GKEYS.filter(k=>k!==g), dr=S.draft.ask||{}, to=others.includes(dr.to)? dr.to : null;
+  const cl=clashList();
+  const clashH = cl.length? `<div class="panel stack"><div class="eyebrow">交鋒題（三組都回答，會留下紀錄）</div>${cl.slice().reverse().map(i=>{ const mine=ST(g).clashAns?.[i], cur=S.ctl?.clash===i;
+    return `<div class="qa ${cur&&!mine?.text?"open":""}" data-coach="clash-${i}"><b class="${cur?"warn":""}">${cur?"🔔 ":""}${esc(CLASHES[i])}</b>
+      <textarea data-input="clash" data-i="${i}" placeholder="你們的回答（Enter 送出，Shift＋Enter 換行）"${op?"":" readonly"}>${esc(S.draft["clash"+i] ?? mine?.text ?? "")}</textarea>
+      <div class="row"><button class="primary" data-act="clashans" data-i="${i}"${opDis(g)}>${mine?.text?"更新回答":"送出回答"}</button>${mine?.text?`<span class="small ok">✓ 已送出 ${hm(mine.at)}</span>`:""}</div>
+      <div class="stack" style="gap:2px"><span class="dim small">其他組的回答</span>${clashOthers(i,g)}</div></div>`; }).join("")}</div>` : "";
+  const inb=inbox(g).slice().reverse(), un=unanswered(g).length;
+  const inH = `<div class="panel stack"><div class="eyebrow">問我們的${un?`<span class="warn">（${un} 題未回答）</span>`:""}</div>${inb.length? inb.map(a=>{ const r=replyOf(a);
+    return `<div class="qa ${r?.text?"":"open"}" data-coach="ask-${a.id}"><div class="small">${gtag(a.by)} ${hm(a.at)}${a.src?`・關於「${esc(srcName(a.src))}」`:""}${(a.tags||[]).length?`・卡在 ${a.tags.map(esc).join("、")}`:""}</div><b>${esc(a.q)}</b>
+      <textarea data-input="reply" data-id="${a.id}" placeholder="你們的回答（Enter 送出）"${op?"":" readonly"}>${esc(S.draft["rep"+a.id] ?? r?.text ?? "")}</textarea>
+      <div class="row"><button class="primary" data-act="reply" data-id="${a.id}"${opDis(g)}>${r?.text?"更新回答":"送出回答"}</button>${r?.text?`<span class="small ok">✓ 已回答 ${hm(r.at)}</span>`:""}</div></div>`; }).join("") : `<div class="small muted">目前沒有人問你們。</div>`}</div>`;
+  const askH = `<div class="panel stack" data-coach="askform"><div class="eyebrow">提問其他組（只問，不會退回或改方案）</div>
+    <div class="q"><span class="small muted">問哪一組</span><div class="opts">${others.map(k=>`<button class="${to===k?"sel":""}" data-act="askto" data-v="${k}">${GROUPS[k].name}</button>`).join("")}</div></div>
+    <div class="q"><span class="small muted">關於哪個電源（可不選）</span><div class="opts">${allSources().map(x=>`<button class="${dr.src===x.id?"sel":""}" data-act="asksrc" data-v="${x.id}">${esc(x.name)}</button>`).join("")}</div></div>
+    <div class="tags"><span class="dim small">卡在</span>${STUCK.map(t=>`<button class="tg ${(dr.tags||[]).includes(t)?"on":""}" data-act="asktag" data-v="${t}">${t}</button>`).join("")}</div>
+    <textarea data-input="ask" placeholder="你的問題，例如：夜間誰看守？（Enter 送出）"${op?"":" readonly"}>${esc(dr.q||"")}</textarea>
+    <div class="row"><button class="primary" data-act="ask"${!to?dis(true,"先選要問哪一組"):opDis(g)}>送出提問</button></div></div>`;
+  const mine=allAsks().filter(a=>a.by===g).reverse();
+  const mineH = mine.length? `<div class="panel stack"><div class="eyebrow">我們問的</div>${mine.map(a=>{ const r=replyOf(a);
+    return `<div class="qa"><div class="small">→ ${gtag(a.to)} ${hm(a.at)}${a.src?`・關於「${esc(srcName(a.src))}」`:""}</div><b>${esc(a.q)}</b>${r?.text?`<div class="small">${gtag(a.to)} 回答：${esc(r.text)}</div>`:`<div class="small warn">等待回答</div>`}</div>`; }).join("")}</div>` : "";
+  return `<div class="stack">${clashH}${inH}${askH}${mineH}</div>`;
+}
+/* 主螢幕：交鋒題三組回答＋最新提問 */
+function qaWallHTML(){
+  const i=S.ctl?.clash, asks=allAsks().slice(-4).reverse();
+  if(i==null && !asks.length) return "";
+  const cl = i!=null? `<div><div class="eyebrow">交鋒題</div><b class="warn" style="font-size:18px">${esc(CLASHES[i])}</b>${GKEYS.map(k=>{ const x=ST(k).clashAns?.[i]; return `<div class="ans">${gtag(k)} ${x?.text? esc(x.text) : `<span class="dim">尚未回答</span>`}</div>`; }).join("")}</div>` : "";
+  const qs = asks.length? `<div><div class="eyebrow">最新提問</div>${asks.map(a=>{ const r=replyOf(a); return `<div class="qi"><div class="small">${gtag(a.by)} → ${gtag(a.to)}${a.src?`・${esc(srcName(a.src))}`:""}</div><b>${esc(a.q)}</b>${r?.text?`<div class="ans">↳ ${esc(r.text)}</div>`:`<div class="small dim">等待回答</div>`}</div>`; }).join("")}</div>` : "";
+  return `<div class="panel qawall" style="${i!=null?"border-color:var(--yellow)":""}">${cl}${qs}</div>`;
+}
+function checkInbox(g){
+  if(!g || !GROUPS[g] || !isOp(g)) return;
+  let ch=false;
+  unanswered(g).forEach(a=>{ const k="inb-"+a.id; if(!S.seen.has(k)){ S.seen.add(k); ch=true; turnToast(`<span class="small">${GROUPS[a.by].name}問你們</span><div>${esc(a.q)}</div><div class="small">到「問答」回答</div>`); } });
+  const ci=clashOpen(g); if(ci!=null && !S.seen.has("cl-"+ci)){ S.seen.add("cl-"+ci); ch=true; turnToast(`<span class="small">交鋒題</span><div>${esc(CLASHES[ci])}</div><div class="small">到「問答」回答</div>`); }
+  if(ch) ls.set("oasis3-seen-"+S.rid, JSON.stringify([...S.seen]));
+}
 function flowTab(){ return `<div class="panel">${pipeTable(false)}</div>`; }
 /* 決策（狀況卡） */
 function decTab(g){
@@ -1328,7 +1394,7 @@ function viewConsole(){
   <div class="console">
     <div class="stack"><div data-live="bigbal"></div><div class="panel" data-live="pipe"></div></div>
     <div class="stack">${drawBoard(true)}<div data-live="grp"></div>
-      ${c.clash!=null?`<div class="panel" style="border-color:var(--yellow)"><div class="eyebrow">交鋒題</div><b class="warn" style="font-size:18px">${esc(CLASHES[c.clash])}</b></div>`:""}
+      <div data-live="qa"></div>
       <div class="newsbox" data-live="news"></div></div>
   </div>
   <button class="fab" data-act="drawer">主控</button>${S.drawer?drawer():""}`;
@@ -1496,6 +1562,7 @@ function tick(){
     upd('[data-live="coach"]', coachHTML(myG()));
     upd('[data-live="turn"]', turnHTML(myG(), false));
     checkTurn(myG());
+    checkInbox(myG());
     upd('[data-live="demo"]', demoHTML(isOp("tech")));
     syncMini();
     if(T>=LOCK_UNTIL && $('[aria-disabled="true"][data-act="tier"][data-why^="17:40"]')) setTimeout(scheduleRender,0);
@@ -1515,6 +1582,7 @@ function tick(){
     upd('[data-live="bigbal"]', balHTML(true, previewOn()? demoPreview() : undefined));
     upd('[data-live="pipe"]', `<div class="eyebrow" style="margin-bottom:4px">外部電源與授權流程</div>${pipeTable(true)}`);
     upd('[data-live="grp"]', groupStat());
+    upd('[data-live="qa"]', qaWallHTML());
     const nw=$('[data-live="news"]');
     if(nw){ const latest=[...EVENTS.filter(e=>T>=e.t).map(e=>({ t:e.t, title:e.title||"背景事件", text:e.text })), ...SCARDS.filter(cardReleased).map(s=>({ t:s.at??T, title:s.title+"　"+s.sub, text:s.story }))].sort((a,b)=>a.t-b.t).pop();
       const key=latest? latest.title+latest.t : "";
@@ -1531,7 +1599,7 @@ setInterval(()=>{ if(!S.ctl || !S.view) return; const T=simNow(); document.query
    ============================================================ */
 let toastTimer;
 function toast(t){ let el=$(".toast"); if(!el){ el=document.createElement("div"); el.className="toast"; el.setAttribute("role","status"); document.body.appendChild(el); } el.textContent=t; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.hidden=true,3000); }
-const LOCAL=new Set(["rdraft","adraft","resumeg","nopop","coachgo","tab","drawer","cigroup","canceledit","leave","draft","pdraft","ldraft","switchg"]);
+const LOCAL=new Set(["askto","asksrc","asktag","askfor","rdraft","adraft","resumeg","nopop","coachgo","tab","drawer","cigroup","canceledit","leave","draft","pdraft","ldraft","switchg"]);
 const toggleIn=(arr,v)=>{ const s=new Set(arr||[]); s.has(v)?s.delete(v):s.add(v); return [...s]; };
 document.addEventListener("click", async ev=>{
   const b=ev.target.closest("[data-act]"); if(!b) return;
@@ -1572,7 +1640,20 @@ document.addEventListener("click", async ev=>{
     case "undraw": ctlUpdate({ draws:{ ...(S.ctl.draws||{}), [d.id]:{ i:null } } }); break;
     case "verdict": { const p=ST("tech").prop?.[d.id]; if(!p) break; const cur=verdictOf(d.id); ctlUpdate({ verdicts:{ ...(S.ctl.verdicts||{}), [d.id]: cur?.v===d.v? null : { v:d.v, at:nowM(), propAt:p.at } } }); break; }
     case "inject": { const s=new Set(S.ctl.injects||[]); s.has(d.id)?s.delete(d.id):s.add(d.id); ctlUpdate({ injects:[...s] }); break; }
-    case "clash": ctlUpdate({ clash: +d.i<0? null : +d.i }); break;
+    case "clash": { const i=+d.i; ctlUpdate({ clash: i<0? null : i, clashShown: i<0? (S.ctl.clashShown||[]) : [...new Set([...(S.ctl.clashShown||[]), i])] }); break; }
+    // 問答
+    case "askto": { const dr=S.draft.ask||{}; S.draft.ask={ ...dr, to: dr.to===d.v? null : d.v }; render(); break; }
+    case "asksrc": { const dr=S.draft.ask||{}; S.draft.ask={ ...dr, src: dr.src===d.v? null : d.v }; render(); break; }
+    case "asktag": { const dr=S.draft.ask||{}; S.draft.ask={ ...dr, tags: toggleIn(dr.tags,d.v) }; render(); break; }
+    case "askfor": { S.draft.ask={ ...(S.draft.ask||{}), to:"tech", src:d.id }; S.tab="qa"; render(); setTimeout(()=>{ const el=$('[data-input="ask"]'); el?.scrollIntoView({behavior:"smooth",block:"center"}); el?.focus(); },80); break; }
+    case "ask": { const g=myG(), dr=S.draft.ask||{}, q=($('[data-input="ask"]')?.value||dr.q||"").trim();
+      if(!dr.to){ toast("先選要問哪一組"); break; } if(!q){ toast("請寫下你的問題"); break; }
+      const a={ id:g+Date.now().toString(36), to:dr.to, q, tags:dr.tags||[], src:dr.src||null, at:T, ts:Date.now() };
+      if(saveSt(g,{ asks:[...(ST(g).asks||[]), a] })){ S.draft.ask={ to:dr.to }; toast("已送出提問給"+GROUPS[dr.to].name); } render(); break; }
+    case "reply": { const g=myG(), el=$(`[data-input="reply"][data-id="${d.id}"]`), t=(el?.value||"").trim(); if(!t){ toast("請寫下回答"); break; }
+      if(saveSt(g,{ replies:{ ...(ST(g).replies||{}), [d.id]:{ text:t, at:T, ts:Date.now() } } })){ S.draft["rep"+d.id]=null; toast("已回答"); } render(); break; }
+    case "clashans": { const g=myG(), el=$(`[data-input="clash"][data-i="${d.i}"]`), t=(el?.value||"").trim(); if(!t){ toast("請寫下回答"); break; }
+      if(saveSt(g,{ clashAns:{ ...(ST(g).clashAns||{}), [d.i]:{ text:t, at:T, ts:Date.now() } } })){ S.draft["clash"+d.i]=null; toast("已送出交鋒題回答"); } render(); break; }
     // 草稿（只存在本機，送出才寫入）
     case "draft": S.draft[d.k]= S.draft[d.k]===d.v? null : d.v; render(); break;
     case "pdraft": { const k="p"+d.id, cur=S.draft[k] || JSON.parse(JSON.stringify(ST("tech").prop?.[d.id]||{ safe:[], who:[] })); if(d.multi) cur[d.k]=toggleIn(cur[d.k],d.v); else cur[d.k]= cur[d.k]===d.v? null : d.v; S.draft[k]=cur; render(); break; }
@@ -1621,7 +1702,7 @@ document.addEventListener("click", async ev=>{
     case "export": exportData(d.f); break;
   }
   runCache.key="";
-  if(["retgo","use","unuse","r17","propose","sat","link","mode","letter","auth","deliver","authgo","authno","choose","sendans","demodone"].includes(act) && S.view==="play" && isOp(myG())){ const g=myG(); setTimeout(()=>{ runCache.key=""; const nx=visCoach(g)[0]; const up=upcoming(g)[0]; turnToast(`<div>✓ 已記錄</div><div class="small">接下來：${esc(nx? nx.title : (up||"看主螢幕，等其他組"))}</div>`); },350); }
+  if(["retgo","use","unuse","r17","propose","sat","link","mode","letter","auth","deliver","authgo","authno","choose","sendans","demodone","reply","clashans"].includes(act) && S.view==="play" && isOp(myG())){ const g=myG(); setTimeout(()=>{ runCache.key=""; const nx=visCoach(g)[0]; const up=upcoming(g)[0]; turnToast(`<div>✓ 已記錄</div><div class="small">接下來：${esc(nx? nx.title : (up||"看主螢幕，等其他組"))}</div>`); },350); }
   if(before!=null && !LOCAL.has(act)){ const after=balDiff(); if(after!=null && Math.abs(after-before)>=0.05){ S.delta={ v:after-before, at:Date.now() }; tick(); } }
 });
 function confirmTwice(b,fn){ if(b.dataset.confirm==="1"){ fn(); return; } b.dataset.confirm="1"; const t=b.textContent; b.textContent="確定刪除？"; setTimeout(()=>{ if(b.isConnected){ b.dataset.confirm=""; b.textContent=t; } },3000); }
@@ -1651,14 +1732,18 @@ document.addEventListener("submit", async ev=>{
   document.activeElement?.blur(); S.pending=false; f.reset(); render();
 });
 document.addEventListener("keydown", ev=>{
-  const el=ev.target; if(el?.dataset?.input!=="answer" || ev.key!=="Enter" || ev.shiftKey || ev.isComposing || ev.keyCode===229) return;
-  ev.preventDefault(); const btn=$(`[data-act="sendans"][data-q="${el.dataset.q}"]`); if(btn){ el.blur(); setTimeout(()=>btn.click(),0); }
+  const el=ev.target, di=el?.dataset?.input; if(!["answer","ask","reply","clash"].includes(di) || ev.key!=="Enter" || ev.shiftKey || ev.isComposing || ev.keyCode===229) return;
+  ev.preventDefault(); const sel = di==="answer"? `[data-act="sendans"][data-q="${el.dataset.q}"]` : di==="ask"? `[data-act="ask"]` : di==="reply"? `[data-act="reply"][data-id="${el.dataset.id}"]` : `[data-act="clashans"][data-i="${el.dataset.i}"]`;
+  const btn=$(sel); if(btn){ el.blur(); setTimeout(()=>btn.click(),0); }
 });
 document.addEventListener("input", ev=>{
   const el=ev.target, d=el.dataset; if(!d.input) return;
   if(d.input==="answer" && dbAPI){ const g=myG(); if(isOp(g)) debounced("a"+d.q,()=>saveAnswer(g,d.q,{ text:el.value })); }
   if(d.input==="rq"){ const k="r"+d.g+d.id; S.draft[k]=S.draft[k]||{ tags:[] }; S.draft[k].q=el.value; }
   if(d.input==="preply"){ S.draft["reply"+d.id]=el.value; }
+  if(d.input==="ask"){ S.draft.ask={ ...(S.draft.ask||{}), q:el.value }; }
+  if(d.input==="reply"){ S.draft["rep"+d.id]=el.value; }
+  if(d.input==="clash"){ S.draft["clash"+d.i]=el.value; }
   if(d.input==="pnote"){ const k="p"+d.id; S.draft[k]=S.draft[k]||JSON.parse(JSON.stringify(ST("tech").prop?.[d.id]||{ safe:[], who:[] })); S.draft[k].note=el.value; }
   if(el.id==="j-name") S.draft.name=el.value;
   if(el.name==="j-group") S.draft.jg=el.value;
@@ -1685,6 +1770,8 @@ async function exportData(f){
     (S.ctl?.pool||[]).forEach(x=>{ const cd=(x.t==="need"?S.needs:S.supply).find(y=>y.id===x.id); if(cd) L.push(["抽籤",x.t==="need"?"需求卡":"供給卡",cd.no,poolLabel(x.t,cd),"","","",hm(x.at)]); });
     Object.entries(S.ctl?.rel||{}).forEach(([k,v])=>{ const h=HOLDS.find(z=>z.id===k); if(h) L.push(["關卡","",h.name,v==="force"?"主持人強制解鎖":"各組完成","","","",hm(h.at)]); });
     (S.ctl?.notices||[]).forEach(n=>L.push(["控制組修正","",n.text,"","","","",hm(n.at)]));
+    allAsks().forEach(a=>{ const r=replyOf(a); L.push(["提問",GROUPS[a.by].name,"問"+GROUPS[a.to].name+(a.src?"・"+srcName(a.src):""),a.q,r?.text?"已回答（"+hm(r.at)+"）":"未回答",r?.text?GROUPS[a.to].name+"："+r.text:"",(a.tags||[]).join("、"),hm(a.at)]); });
+    CLASHES.forEach((cq,i)=>GKEYS.forEach(g=>{ const x=ST(g).clashAns?.[i]; if(x?.text) L.push(["交鋒題",GROUPS[g].name,"交鋒題 "+(i+1),cq,"",x.text,"",hm(x.at)]); }));
     allSources().forEach(def=>retsOf(def.id,null).forEach(r=>L.push(["退回提問",GROUPS[r.by].name,def.name,`第${r.ver}版：${r.q}`,"","",(r.tags||[]).join("、"),hm(r.at)])));
     L.push(["結果","","門市",R.ok?"撐到日出":R.darkNow?"全黑":hm(R.firstDark)+" 電量耗盡",`供 ${fmt1(R.supTot)}／需 ${fmt1(R.demTot)}`,"","",hm(R.T)]);
     allSources().forEach(def=>{ const pp=pipe(def.id), p=pp.p; L.push(["技術準備清單","技術組",def.id+" "+def.name,p?`${p.method?p.method+"｜":""}${(p.safe||[]).join("、")}｜${p.rule}｜同意：${(p.who||[]).join("、")}｜${p.note||""}`:"未提案",`判定：${pp.v?.v||"—"}｜店長：${pp.u?(pp.u.v==="no"?"不使用":"使用"):"—"}｜責任：${pp.a?.liab||"—"}｜${(pp.steps.find(x=>x.k==="arrive").label)||""}`,"","",p?hm(p.at):""]); });
