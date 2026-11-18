@@ -820,8 +820,14 @@ function checkStories(){
 /* ============================================================
    畫面
    ============================================================ */
+/* 手指（或滑鼠）按住時暫停重畫，避免按鈕在按下與放開之間被換掉而點不到 */
+let ptrTok=0;
+document.addEventListener("pointerdown",e=>{ S.ptr=e.target; ptrTok++; },true);
+const ptrUp=()=>{ const t=ptrTok; setTimeout(()=>{ if(t!==ptrTok) return; S.ptr=null; if(S.pending){ S.pending=false; scheduleRender(); } },400); };
+document.addEventListener("pointerup",ptrUp,true); document.addEventListener("pointercancel",ptrUp,true);
 function scheduleRender(){
   if(S.view==="play" && !S.me && $('form[data-form="join"]')) return; // 選組畫面不被資料更新打斷
+  if(S.ptr && S.ptr.isConnected){ S.pending=true; return; }
   const a=document.activeElement;
   if(a && (a.tagName==="TEXTAREA" || (a.tagName==="INPUT" && !["checkbox","radio"].includes(a.type))) && $("#app").contains(a)){ S.pending=true; return; }
   render();
@@ -1074,7 +1080,7 @@ function demoHTML(interactive){
   const rem = R? Math.max(0, R.cap - R.usedNow) : (S.ctl?.cap||13.5);
   const add = DEMO_SRC.filter(x=>d.src.includes(x.k)); const lo=add.reduce((a,x)=>a+x.lo,0), hi=add.reduce((a,x)=>a+x.hi,0);
   const until = (e,kw) => { const m=T+e/kw*60; return m>=SUNRISE? "06:00 以後" : hm(m); };
-  const rows = DEMO_LOADS.map(L=>{ const sel=L.k===d.load, h=rem/L.kw; const pct=Math.min(100,(T+h*60)/SUNRISE*100);
+  const rows = DEMO_LOADS.map(L=>{ const sel=L.k===d.load, h=rem/L.kw; const pct=Math.round(Math.min(100,(T+h*60)/SUNRISE*100));
     return `<div class="dm-row ${sel?"sel":""}" ${interactive?`data-act="demo" data-k="load" data-v="${L.k}" role="button"`:""}><div class="row between"><b>${L.name}</b><span class="num">${L.kw} kW</span></div>
       <div class="dm-bar"><i style="width:${pct}%"></i></div><div class="small">儲能 ${fmt1(rem)} 度 ÷ ${L.kw} kW ≈ <b>${fmt1(h)} 小時</b>・<span class="${T+h*60>=SUNRISE?"ok":"bad"}">${until(rem,L.kw)} 電量耗盡</span></div></div>`; }).join("");
   const L=DEMO_LOADS.find(x=>x.k===d.load);
@@ -1550,7 +1556,7 @@ function tick(){
   const left=realLeft(), hl=$('[data-live="hostleft"]'); if(hl&&left!=null) hl.textContent=`${String(Math.floor(left/60000)).padStart(2,"0")}:${String(Math.floor(left/1000)%60).padStart(2,"0")}`;
   document.querySelectorAll('[data-live="comm"]').forEach(el=>el.innerHTML=`<span class="eyebrow">通訊</span><span class="v" style="color:var(--${red?"red":"orange"})"><i class="bulb"></i>${red?"中斷":"有限恢復"}</span>`);
   document.querySelectorAll('[data-live="commpill"]').forEach(el=>{ el.innerHTML=`<i class="dot"></i>通訊${red?"中斷":"有限"}`; el.style.color=`var(--${red?"red":"orange"})`; });
-  const upd=(sel,html)=>{ const el=$(sel); if(el && el.dataset.k!==html){ el.dataset.k=html; el.innerHTML=html; } };
+  const upd=(sel,html)=>{ const el=$(sel); if(el && el.dataset.k!==html){ if(S.ptr && el.contains(S.ptr)) return; el.dataset.k=html; el.innerHTML=html; } };
   if(S.view==="play" && S.me){
     upd('[data-live="bal"]', balHTML(false, previewOn()? demoPreview() : undefined));
     upd('[data-live="mini"]', miniHTML());
