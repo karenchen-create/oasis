@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>城市能源綠洲演習 D1</title>
+<!-- ===== Firebase 多人同步設定：把 Firebase 主控台給的設定貼進下面 ===== -->
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA-8HBS-hN_7TXn2p4RhnykoKsaXtj0gbo",
+  authDomain: "oasis-sync.firebaseapp.com",
+  projectId: "oasis-sync",
+  storageBucket: "oasis-sync.firebasestorage.app",
+  messagingSenderId: "21331747041",
+  appId: "1:21331747041:web:0bf1b68e06438c672b17a0"
+};
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* 把原本 claude.ai 的 db / downloads 換成 Firebase Firestore 與一般瀏覽器下載 */
+(function(){
+  let fsdb = null;
+  try{
+    const c = window.FIREBASE_CONFIG || {};
+    if(c.apiKey && c.projectId && window.firebase){
+      firebase.initializeApp(c);
+      fsdb = firebase.firestore();
+      fsdb.settings({ ignoreUndefinedProperties:true, experimentalAutoDetectLongPolling:true, merge:true });
+    }
+  }catch(e){ console.error("Firebase 初始化失敗", e); fsdb = null; }
+  const downloads = { save: async ({ filename, data }) => {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: /\.json$/i.test(filename) ? "application/json" : "text/csv;charset=utf-8" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  } };
+  window.claude = { use: async name => name === "db" ? fsdb : name === "downloads" ? downloads : null };
+})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+:root{
+  --night:#0a1016; --panel:#16212a; --panel2:#1d2a34; --line:#2a3a46;
+  --fg:#eef3f4; --muted:#93a6ae; --dim:#61747d; --glow2:#ffe7a3;
+  --yellow:#f3c531; --orange:#ff8b3d; --red:#ff4e55; --green:#3fd08f;
+  --gov:#b9a2ff; --tech:#56d0e4; --soc:#ff9db1;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-story:"Noto Serif TC","Noto Sans TC",serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--night);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 14px}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--yellow);color:#1a1500;border-color:var(--yellow);font-weight:700}
+button.sel{background:var(--fg);color:var(--night);border-color:var(--fg)}
+input,textarea{background:#0d151b;border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%}
+textarea{min-height:60px;resize:vertical}
+h1,h2,h3{margin:0;text-wrap:balance} p{margin:0} a{color:inherit}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .dim{color:var(--dim)} .small{font-size:13px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:grid;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12.5px;border:1px solid var(--line);white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:currentColor;display:inline-block}
+.g-gov{color:var(--gov)} .g-tech{color:var(--tech)} .g-soc{color:var(--soc)}
+.ok{color:var(--green)} .warn{color:var(--yellow)} .bad{color:var(--red)}
+.banner{border:1px solid var(--orange);color:var(--orange);background:#2a1a10;border-radius:12px;padding:10px 14px;margin-bottom:12px}
+.blink{animation:flash 1s ease-in-out infinite} @keyframes flash{50%{opacity:.3}}
+@keyframes blink{to{visibility:hidden}}
+.landing{max-width:960px;margin:4vh auto 0;display:grid;gap:24px}
+.landing h1{font-family:var(--f-story);font-size:clamp(30px,5.4vw,54px);font-weight:900;line-height:1.15}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.role{display:grid;gap:4px;text-align:left;padding:18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);text-decoration:none;color:var(--fg)}
+.role b{font-size:19px} .role.main{border-color:var(--glow2);background:linear-gradient(160deg,#2a2615,var(--panel) 60%)}
+.foot{font-size:11.5px;color:var(--dim);text-align:center;margin-top:18px}
+
+/* 店長畫面 */
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:12px}
+.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:20;background:var(--night);padding-block:8px;margin-top:-8px}
+.hud .clock{font-family:var(--f-num);font-size:20px;font-weight:600}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tabs button{border-radius:999px;position:relative;padding:9px 6px;font-weight:700}
+.tabs button.on{background:var(--fg);color:var(--night);border-color:var(--fg)}
+.badge{position:absolute;top:-6px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;display:grid;place-items:center;padding:0 4px}
+
+/* 供需平衡 */
+.bal{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:12px}
+.bal.ok{border-left-color:var(--green)} .bal.bad{border-left-color:var(--red)}
+.bal-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.verdict{font-size:clamp(20px,4.6vw,26px);font-weight:900;line-height:1.25}
+.bal-num{font-family:var(--f-num);text-align:right;line-height:1.05;white-space:nowrap}
+.bal-num b{font-size:clamp(24px,5vw,32px);font-weight:600;display:block}
+.bal-num span{font-size:11.5px;color:var(--muted)}
+.unmet{display:flex;flex-wrap:wrap;gap:6px}
+.unmet span{font-size:13px;border-radius:8px;padding:3px 9px;background:#2a1013;border:1px solid #5a2228;color:#ffb3b7}
+.unmet span.hid{background:transparent;border-style:dashed;color:var(--muted)}
+.delta{font-size:12.5px;border-radius:999px;padding:1px 9px;border:1px solid currentColor;display:inline-block;animation:dpop .4s ease-out}
+@keyframes dpop{from{transform:scale(1.25);opacity:0}}
+.sd{display:grid;gap:6px}
+.sd-row{display:grid;grid-template-columns:2.6em minmax(0,1fr) 5.6em;gap:8px;align-items:center}
+.sd-row .lbl{font-size:14px;font-weight:700}
+.sd-row .val{font-family:var(--f-num);font-size:14px;text-align:right}
+.track{position:relative;height:26px;border-radius:7px;background:#0d151b;border:1px solid var(--line);overflow:hidden;display:flex}
+.track i{height:100%;display:block;flex:none;transition:width .6s;border-right:1px solid rgba(10,16,22,.6)}
+.pend{background-image:repeating-linear-gradient(45deg,rgba(10,16,22,.75) 0 5px,transparent 5px 10px)!important}
+.ghost{background:repeating-linear-gradient(45deg,rgba(255,78,85,.55) 0 5px,transparent 5px 10px)!important;border:1px dashed var(--red)}
+.track .mark{position:absolute;top:-2px;bottom:-2px;border-left:2px dashed var(--fg);z-index:2}
+.legend{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:12px;color:var(--muted);padding-left:calc(2.6em + 8px)}
+.legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.legend s{color:var(--dim)}
+.tl{position:relative;height:16px;border-radius:8px;background:#0d151b;border:1px solid var(--line)}
+.tl i{position:absolute;top:0;bottom:0;display:block}
+.tl .lit{background:var(--glow2)} .tl .off{background:var(--red);background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.35) 0 4px,transparent 4px 8px)}
+.tl .past{opacity:.35}
+.tl .now{position:absolute;top:-5px;bottom:-5px;width:3px;background:var(--fg);border-radius:2px;z-index:3}
+.tl .arr{position:absolute;top:-6px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--green);border:2px solid var(--night);z-index:3}
+.ticks{position:relative;height:15px;font-size:11px;color:var(--dim);font-family:var(--f-num)}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ticks span:first-child{transform:none} .ticks span:last-child{transform:translateX(-100%);color:var(--glow2)}
+.mini{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;width:100%;padding:6px 10px;border-radius:10px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--line)}
+
+/* 抽籤 */
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:6px}
+.chip{font-size:12.5px;border-radius:8px;padding:4px 9px;border:1px solid var(--line);background:var(--panel);display:flex;gap:6px;align-items:baseline;line-height:1.35}
+.chip .dim{white-space:nowrap}
+.chip.sup{border-left:3px solid var(--green)} .chip.dem{border-left:3px solid var(--soc)}
+.chip b{font-weight:700} .chip .q{color:var(--dim);font-family:var(--f-num)}
+.drawgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.dcard{border-radius:14px;border:1px solid var(--line);background:var(--panel);padding:12px 14px;display:grid;gap:8px;align-content:start;border-top:4px solid var(--green)}
+.dcard.dem{border-top-color:var(--soc)}
+.dcard b{font-size:16px}
+.dcard .res{font-size:22px;font-weight:900;font-family:var(--f-story);min-height:1.4em;line-height:1.3}
+.dcard .res.q{color:var(--dim);font-family:var(--f-num)}
+.dcard.rolling .res{color:var(--yellow)}
+.dcard.flash{animation:glow 1.6s ease-out}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(243,197,49,.9)}100%{box-shadow:0 0 0 22px rgba(243,197,49,0)}}
+.sidetag{font-size:11.5px;font-weight:700;border-radius:4px;padding:0 6px}
+.sidetag.sup{background:var(--green);color:#04170e} .sidetag.dem{background:var(--soc);color:#250810}
+
+/* 卡片 */
+.card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px 14px;display:grid;gap:8px}
+.card.on{border-color:var(--glow2);background:linear-gradient(150deg,#26220f,var(--panel) 70%)}
+.card.live{border-color:var(--green)} .card.coming{border-color:var(--yellow)} .card.fail{border-color:var(--red);opacity:.8}
+.card.need{border-left:4px solid var(--red)}
+.card h3{font-size:16px}
+.kw{font-family:var(--f-num);font-size:13px;color:var(--muted)}
+.opts{display:flex;gap:6px;flex-wrap:wrap}
+.opts button{padding:6px 11px;font-size:14px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{min-width:42px;height:42px;padding:0 8px;font-size:18px}
+.stepper .num{min-width:58px;text-align:center;font-size:18px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tg{font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:transparent}
+.tg.on{border-color:var(--orange);color:var(--orange);background:#2a1a10}
+.opt{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#0d151b;text-align:left;width:100%}
+.opt.sel{border-color:var(--yellow);background:#2a2610;color:var(--fg)}
+.opt b{font-family:var(--f-num)}
+.scard{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+.scard header{padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--line);display:grid;gap:4px}
+.scard .body{padding:12px 16px;display:grid;gap:14px}
+.q{display:grid;gap:8px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:13px}
+
+/* 說明視窗 */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(3,6,9,.82);display:grid;place-items:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.story{width:min(620px,100%);max-height:100%;overflow:auto;background:linear-gradient(170deg,#1b1a12,#12181d 45%);border:1px solid #4a4430;border-radius:18px;padding:22px 24px;display:grid;gap:14px}
+.story .kicker{font-family:var(--f-num);color:var(--glow2);font-size:13px;letter-spacing:.1em}
+.story h2{font-family:var(--f-story);font-size:clamp(22px,4vw,30px);font-weight:900}
+.story .text{font-family:var(--f-story);font-size:18px;line-height:1.85;white-space:pre-wrap;min-height:2em}
+.story .text.big{font-size:clamp(26px,6vw,36px);font-weight:900;line-height:1.35}
+.story .caret::after{content:"▍";color:var(--glow2);animation:blink 1s steps(2,start) infinite}
+.story.draw{border-color:var(--yellow);background:linear-gradient(170deg,#2a2510,#12181d 55%)}
+.story.alarm{border-color:var(--red);background:linear-gradient(170deg,#2a0e10,#12181d 50%)}
+
+/* 主螢幕 */
+.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:stretch;margin-bottom:14px}
+.lampbox{display:grid;gap:2px;padding:8px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);min-width:150px}
+.lampbox .v{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px}
+.bulb{width:15px;height:15px;border-radius:50%;box-shadow:0 0 14px currentColor;background:currentColor;display:inline-block}
+.bigclock{display:grid;justify-items:end;padding:6px 16px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+.bigclock .t{font-family:var(--f-num);font-size:44px;font-weight:600;line-height:1.05}
+.console{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
+.lights{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.light{border-radius:12px;padding:10px;background:#0d151b;border:1px solid var(--line);display:grid;gap:3px;text-align:center}
+.light .b2{width:34px;height:34px;border-radius:50%;margin:0 auto;background:var(--glow2);box-shadow:0 0 20px 5px rgba(255,236,180,.5)}
+.light.warn .b2{background:var(--yellow);box-shadow:0 0 14px 3px rgba(243,197,49,.5)}
+.light.dark .b2{background:#1a232b;box-shadow:none}
+.light b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.newsbox{border-radius:14px;border:1px solid #4a4430;background:linear-gradient(170deg,#1b1a12,#12181d 60%);padding:14px 18px;display:grid;gap:6px}
+.newsbox .text{font-family:var(--f-story);font-size:19px;line-height:1.7}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .n{font-family:var(--f-num);font-size:30px;font-weight:600;line-height:1.1}
+.bars{display:grid;gap:5px}
+.bar{display:grid;grid-template-columns:22px minmax(0,1fr) 30px;gap:8px;align-items:center;font-size:13.5px}
+.bar .tr{height:14px;border-radius:7px;background:var(--panel2);overflow:hidden}
+.bar .tr i{display:block;height:100%;background:var(--glow2)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:45;overflow:auto;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) 16px;display:grid;gap:14px;align-content:start}
+.drawer section{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.fab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--yellow);color:#1a1500;border:0;font-weight:700;border-radius:999px;padding:11px 20px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--night);padding:9px 16px;border-radius:12px;z-index:60;font-size:14px;max-width:min(560px,calc(100% - 32px));text-align:center}
+.form{display:grid;gap:12px} .field{display:grid;gap:6px} .field>label,.field>.lbl{font-weight:700;font-size:14px}
+.choicebtns{display:flex;gap:6px;flex-wrap:wrap}
+.needlist{display:grid;gap:8px}
+.tierchip{font-size:12px;border-radius:4px;padding:0 6px;font-weight:700}
+.t1{background:var(--red);color:#1a0505} .t2{background:var(--yellow);color:#1a1500} .t3{background:var(--dim);color:var(--fg)}
+.verdictb{display:flex;gap:4px;flex-wrap:wrap} .verdictb button{font-size:12.5px;padding:4px 9px} .verdictb button.on{background:var(--fg);color:var(--night)}
+@media (max-width:1000px){ .console{grid-template-columns:minmax(0,1fr)} .topbar{grid-template-columns:minmax(0,1fr) auto} .topbar>div:first-child{grid-column:1/-1} }
+@media (max-width:520px){ .bigclock .t{font-size:32px} .story{padding:18px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* v3：三組分工與流程 */
+.gpill{font-weight:700}
+.steps{display:flex;gap:4px;flex-wrap:wrap}
+.stp{font-size:12px;padding:2px 8px;border-radius:6px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.stp.done{border-color:#24563f;color:var(--green);background:#0f2219}
+.stp.wait{border-color:var(--yellow);color:var(--yellow);background:#2a2610;font-weight:700}
+.stp.no{border-color:#5a2228;color:#ff9aa0;background:#2a1013}
+.todobox{border-radius:14px;border:1px solid var(--yellow);background:#1f1c10;padding:10px 14px;display:grid;gap:6px}
+.todobox b{font-size:13px;color:var(--yellow);letter-spacing:.1em}
+.todobox button{text-align:left;background:transparent;border:0;border-bottom:1px dashed #4a4430;border-radius:0;padding:6px 2px;font-size:14.5px}
+.todobox button:last-child{border-bottom:0}
+.ro{border:1px dashed var(--muted);color:var(--muted);border-radius:12px;padding:8px 12px;font-size:13.5px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.pipe{width:100%;border-collapse:separate;border-spacing:0 6px;min-width:0;font-size:14px}
+.pipe th{font-size:12px;color:var(--muted);font-weight:500;text-align:left;padding:0 6px;border:0}
+.pipe td{padding:8px 6px;background:var(--panel);border:0;vertical-align:middle}
+.pipe td:first-child{border-radius:10px 0 0 10px;font-weight:700;white-space:nowrap}
+.pipe td:last-child{border-radius:0 10px 10px 0}
+.cell{font-size:13px;display:inline-block;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.cell.done{color:var(--green)} .cell.todobox{color:var(--dim)} .cell.no{color:#ff9aa0;background:#2a1013}
+.cell.wait{color:#1a1500;background:var(--yellow);font-weight:700;animation:flash 1.6s ease-in-out infinite}
+.grpstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grpstat>div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;border-top:3px solid currentColor}
+.grpstat .n{font-family:var(--f-num);font-size:26px;font-weight:600;line-height:1.1}
+.drawgrid.compact{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.drawgrid.compact .dcard{padding:8px 10px;gap:4px}
+.drawgrid.compact .dcard b{font-size:13.5px}
+.drawgrid.compact .dcard .res{font-size:17px}
+.drawgrid.compact .dcard button{padding:5px 10px}
+.dcard.risk{border-top-color:var(--orange)} .sidetag.risk{background:var(--orange);color:#1f0d02} .chip.risk{border-left:3px solid var(--orange)}
+.bigbal .verdict{font-size:34px} .bigbal .bal-num b{font-size:40px}
+.tabs.n3{grid-template-columns:repeat(3,1fr)} .tabs.n2{grid-template-columns:repeat(2,1fr)} .tabs.n1{grid-template-columns:1fr}
+.holdbar{border:2px solid var(--yellow);background:#2a2610;border-radius:14px;padding:10px 14px;display:flex;gap:8px 16px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.holdbar b{color:var(--yellow);font-size:17px}
+.prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px dashed var(--line);padding:6px 0;font-size:14px}
+select{background:#0d151b;border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--fg);font:inherit}
+.coachbox{border-radius:14px;border:2px solid var(--yellow);background:#221f0e;padding:12px 14px;display:grid;gap:8px}
+.coachbox .ct{font-size:18px;line-height:1.35}
+.coachbox.idle{border:1px solid var(--line);background:var(--panel)}
+.coachbox.host .say{margin-top:6px;font-family:var(--f-story);font-size:16px;line-height:1.7;color:var(--glow2)}
+.coachpulse{animation:cpulse 1.1s ease-in-out 4;outline:3px solid var(--yellow);outline-offset:3px}
+@keyframes cpulse{50%{outline-color:transparent}}
+.story.coach{border-color:var(--yellow)}
+.demo{border-color:var(--tech)}
+.dm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.dm-row,.dm-src{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:6px;background:#0d151b}
+.dm-row[role=button],.dm-src[role=button]{cursor:pointer}
+.dm-row.sel,.dm-src.sel{border-color:var(--tech);background:#0f2027}
+.dm-bar{height:12px;border-radius:6px;background:#26343e;overflow:hidden}
+.dm-bar i{display:block;height:100%;background:var(--glow2)}
+.dm-res{border-radius:12px;padding:10px 12px;background:#10261c;border:1px solid #24563f;font-size:14.5px}
+.goal{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;background:linear-gradient(120deg,#1b2a1f,var(--panel) 60%);border:1px solid #2f5a3e;border-radius:14px;padding:10px 14px}
+.goal-main{display:grid;gap:2px}
+.goal-main b{font-size:17px}
+.goal-cd{display:grid;justify-items:end}
+.goal-cd b{font-size:22px;font-weight:600;color:var(--glow2)}
+.goal-st{grid-column:1/-1;display:flex;gap:16px;font-size:13.5px}
+.goal.big .goal-main b{font-size:22px}
+.goal.big .goal-cd b{font-size:34px}
+.hud .clock{min-width:7.5em}
+.bal.preview{border-style:dashed;border-color:var(--tech);border-left-color:var(--tech)}
+.pvtag{justify-self:start;font-size:12.5px;font-weight:700;color:#04212a;background:var(--tech);border-radius:6px;padding:2px 8px}
+.turnbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;background:#0f1b24;border:1px solid var(--tech);border-radius:12px;padding:6px 10px;font-size:13.5px}
+.turnbar .tl-h{font-weight:900;color:var(--tech);letter-spacing:.08em}
+.turnbar .tchip{border-radius:8px;padding:2px 8px;background:var(--panel2)}
+.turnbar .tchip.me{background:#3a3210;outline:2px solid var(--yellow)}
+.turnbar.big{font-size:17px;padding:10px 14px}
+.turntoast{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;background:#0f1b24;border:2px solid var(--tech);color:var(--fg);border-radius:14px;padding:10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:min(560px,calc(100% - 24px));font-size:15px;display:grid;gap:2px}
+.turntoast.in{animation:tin .35s ease-out}
+@keyframes tin{from{transform:translate(-50%,30px);opacity:0}}
+
+.lastnote{flex-basis:100%;font-size:12.5px;color:var(--muted)}
+.lastnote [data-live]{color:var(--fg)}
+.turntoast{pointer-events:none;opacity:.97}
+
+.turnbar .tchip.idle{opacity:.55}
+.turnbar .tchip.act{background:#1d3340}
+.turnbar .tchip.me.act{background:#3a3210}
+
+.turnbar .tchip.next{opacity:.7;background:var(--panel2)}
+.turnbar .tchip.now{background:#1d3340;outline:2px solid var(--tech)}
+.turnbar .tchip.me.now{background:#3a3210;outline:2px solid var(--yellow)}
+
+.goal-prog{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12.5px}
+.goal-prog .gp{border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--dim)}
+.goal-prog .gp.done{color:var(--green);border-color:#24563f}
+.goal-prog .gp.cur{color:#1a1500;background:var(--glow2);border-color:var(--glow2);font-weight:700}
+.endbox{border:2px solid var(--glow2);border-radius:16px;padding:14px 16px;background:linear-gradient(150deg,#2a2615,var(--panel) 70%);display:grid;gap:10px}
+.endbox .et{font-size:22px}
+.endbox.big .et{font-size:30px}
+.endgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.endgrid>div{display:grid;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.thread{border-left:3px solid var(--tech);padding:4px 0 4px 10px;display:grid;gap:3px;font-size:13px;margin:4px 0}
+.thread .th-q{color:#ffcf99}
+.thread .th-a{color:var(--tech)}
+.retbox{border:1px dashed var(--line);border-radius:10px;padding:6px 10px}
+.retbox summary{cursor:pointer;font-size:13.5px;color:var(--muted)}
+.retbox[open]{display:grid;gap:8px}
+.crow{display:grid;gap:6px;border-bottom:1px dashed var(--line);padding:6px 0}
+.noticebar{border:2px solid var(--orange);background:#2a1a10;border-radius:12px;padding:8px 12px;display:grid;gap:2px}
+.noticebar b{color:var(--orange)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<script>
+/* ============================================================
+   《城市能源綠洲演習手冊》第十一版（1108v11）第一階段 D1
+   全場同一家示範門市；三組各一支操作手機，依手冊分工：
+   技術組提出做法與條件 → 技術判定員裁定 → 社會組（店長）決定要不要用 → 治理組決定誰授權、出事誰負責
+   ============================================================ */
+const GROUPS = {
+  soc:  { name:"社會組", cls:"g-soc",  color:"var(--soc)",  role:"店長與里長", intro:"你們是店長與里長：決定開什麼、電給誰、怎麼找到需要的人。", prefix:"S" },
+  tech: { name:"技術組", cls:"g-tech", color:"var(--tech)", role:"電與通訊", intro:"你們最懂電與通訊：提出做法，說清楚要什麼條件、規則允不允許。", prefix:"T" },
+  gov:  { name:"治理組", cls:"g-gov",  color:"var(--gov)",  role:"授權與責任", intro:"你們決定誰授權、出事誰負責。你們沒點頭，事情就做不下去。", prefix:"G" },
+};
+const GKEYS = ["soc","tech","gov"];
+const START_HHMM = 17*60+30, SUNRISE = 750, COMM_RESTORE = 210, LOCK_UNTIL = 10;
+const SEGS = [
+  { name:"情境引導", real:10, s0:0, s1:0 },
+  { name:"技術示範（一）＋回應", real:30, s0:0, s1:90 },
+  { name:"狀況注入＋技術示範（二）", real:35, s0:90, s1:210 },
+  { name:"核心議題", real:35, s0:210, s1:360 },
+  { name:"上牆", real:10, s0:360, s1:360 },
+];
+const TIERS = [
+  { t:1, name:"一級", sub:"最後才關", kw:2.0,  devs:"收銀・網路・緊急照明・衛星・藥品冰箱・高價冷凍櫃・AED" },
+  { t:2, name:"二級", sub:"有餘電才開", kw:2.5, devs:"手機充電區・飲水機・食品冷藏櫃 1～2 台" },
+  { t:3, name:"三級", sub:"斷電即關", kw:10.5, devs:"空調・招牌・咖啡機・微波爐・冰淇淋機・冷凍櫃" },
+];
+const LOADS = {
+  oxygen:  { name:"製氧機", unit:"台", kw:0.45, scope:"插座供電" },
+  cpap:    { name:"呼吸器", unit:"台", kw:0.075, scope:"插座供電" },
+  insulin: { name:"胰島素冷藏", unit:"份", kw:0.175/24, scope:"冰箱冷藏" },
+  fridge:  { name:"疫苗冰箱", unit:"台", kw:0.75/24, scope:"插座供電" },
+};
+const EV_KW = 3, LINK_PENALTY = 30, ATTACK_OUTAGE = 60;
+
+const DRAWS = [
+  { id:"batt", side:"sup", name:"停電當下的儲能電量", short:"儲能電量", when:"17:30",
+    opts:[ {l:"100%",v:1}, {l:"90%",v:.9}, {l:"80%",v:.8} ] },
+  { id:"ev", side:"sup", name:"店前車主願意借電", short:"車主借電", when:"17:40",
+    opts:[ {l:"2 台・約 70 度",n:2,kwh:70}, {l:"2 台・約 55 度",n:2,kwh:55}, {l:"2 台・約 40 度",n:2,kwh:40}, {l:"1 台・約 30 度",n:1,kwh:30}, {l:"1 台・約 20 度",n:1,kwh:20}, {l:"0 台・車主都要先回家",n:0,kwh:0} ] },
+  { id:"mobile", side:"sup", name:"移動式儲能", short:"移動式儲能", when:"19:00",
+    opts:[ {l:"聯絡上後 2 小時到",lead:120}, {l:"聯絡上後 3 小時到",lead:180}, {l:"聯絡上後 4 小時到",lead:240}, {l:"調往醫院，今晚不來",lead:null} ] },
+  { id:"walkin", side:"dem", name:"20:00 走進門市的維生需求", short:"走進門市", when:"20:00",
+    opts:[ {l:"製氧機 1・胰島素 10・疫苗冰箱 1",ox:1,ins:10,fr:1}, {l:"製氧機 2・胰島素 12・疫苗冰箱 1",ox:2,ins:12,fr:1}, {l:"製氧機 3・胰島素 15",ox:3,ins:15,fr:0}, {l:"製氧機 2・胰島素 8・疫苗冰箱 1",ox:2,ins:8,fr:1}, {l:"製氧機 1・胰島素 15",ox:1,ins:15,fr:0} ] },
+  { id:"swap", side:"sup", name:"換電站能否開通", short:"換電站", when:"21:00",
+    opts:[ {l:"開通・約 40 度",e:40}, {l:"開通・約 35 度",e:35}, {l:"開通・約 31 度",e:31}, {l:"業者無法開通",e:0} ] },
+  { id:"home", side:"dem", name:"巡守隊找到的居家使用者", short:"居家使用者", when:"21:00",
+    opts:[ {l:"4 位：製氧機 3・呼吸器 1",ox:3,cp:1}, {l:"8 位：製氧機 5・呼吸器 3",ox:5,cp:3}, {l:"12 位：製氧機 7・呼吸器 4",ox:7,cp:4}, {l:"16 位：製氧機 10・呼吸器 5",ox:10,cp:5} ] },
+  { id:"attack", side:"risk", name:"網攻是否波及示範門市", short:"網攻", when:"1-C 之後",
+    opts:[ {l:"未波及示範門市",hit:false,w:2}, {l:"示範門市遭入侵",hit:true,w:1} ] },
+];
+const SOURCES = [
+  { id:"R1-2", name:"店前電動車", draw:"ev", color:"#3fd08f" },
+  { id:"R1-3", name:"門口換電站", draw:"swap", color:"#56d0e4", method:["等通訊恢復","用門市衛星","離線緊急放電"] },
+  { id:"R1-4", name:"移動式儲能", draw:"mobile", color:"#b9a2ff" },
+];
+function allSources(){
+  return [...SOURCES, ...(S.ctl?.pool||[]).filter(x=>x.t==="sup").map(x=>{ const c=S.supply.find(s=>s.id===x.id); return c? { id:"c-"+x.id, name:(c.unit||c.no||"供給卡"), color:"#ffb36b", card:true, kwh:+c.pkwh||0, lead:+c.plead||60, drawAt:x.at } : null; }).filter(Boolean)];
+}
+const poolOf = t => (t==="need"? S.needs.filter(n=>n.pool && n.pkind && +n.pqty>0) : S.supply.filter(s=>s.pool && +s.pkwh>0));
+const poolLeft = t => poolOf(t).filter(c=>!(S.ctl?.pool||[]).some(x=>x.t===t && x.id===c.id));
+const poolLabel = (t,c) => t==="need"? `${c.unit||c.no}・${LOADS[c.pkind]?.name||""} ${c.pqty}` : `${c.unit||c.no}・${c.pkwh} 度・${c.plead||60} 分鐘到`;
+function drawLock(id){
+  const T=simNow();
+  if(id==="batt") return (S.ctl?.seg>=1 || S.ctl?.read)? "" : "主持人宣讀情境後";
+  if(id==="ev") return "";
+  if(id==="mobile"||id==="pool-sup") return passed("h2")? "" : "19:00 治理組決定開放門外後";
+  if(id==="walkin"||id==="pool-need") return T>=150? "" : "20:00 狀況卡 1-B 後";
+  if(id==="swap"||id==="home") return T>=210? "" : "21:00 後";
+  if(id==="attack") return (S.ctl?.injects||[]).includes("1C")? "" : "先發出備用卡 1-C";
+  return "";
+}
+function drawWaitLabel(id){ const dd=SOURCES.find(z=>z.id===id)?.draw, lk=dd? drawLock(dd) : ""; const hhmm=lk&&lk.match(/\d\d:\d\d/)?.[0]; return hhmm? hhmm+" 後抽籤" : "等主持人抽籤"; }
+const NEXT_EVENTS = [ { at:10, t:"17:40 狀況卡 1-A：社會組決定營運模式（開哪幾級）、治理組回答店長權限" }, { at:90, t:"19:00 人潮湧入：治理組決定開放門外" }, { at:150, t:"20:00 狀況卡 1-B：抽走進門市的需求" }, { at:210, t:"21:00 抽換電站、巡守隊" }, { at:360, t:"23:30 第一階段結束" } ];
+function nextEvent(){ const T=simNow(); return NEXT_EVENTS.find(e=>e.at>T+0.5) || null; }
+function ffTarget(){ const c=S.ctl; if(!c || c.seg<1 || c.seg>3 || heldAt()) return null; const e=nextEvent(), seg=SEGS[c.seg]; if(!e || e.at>seg.s1) return null; return e; }
+const SAFE = ["轉換開關隔離","專人看守","電工在場","保留回程電量","防水接地"];
+const RULE = ["現行規則允許","規則不明","現行規則不允許"];
+const AGREE = ["車主","換電業者","設備持有單位","全家總部","市府","台電"];
+const LIAB = ["店長","全家總部","車主／業者","市府","不授權"];
+const MODES = ["店長可自行決定（事後追認）","須取得緊急授權書","不得開放"];
+const SCOPES = ["冰箱冷藏","插座供電"];
+const STUCK = ["法規","設備","通訊","授權","人力"];
+
+const SCARDS = [
+  { id:"1A", kind:"card", at:10, title:"狀況卡 1-A", sub:"總部失聯，店長自己決定", time:"17:40",
+    story:"照現在的用法，不到 1 小時儲能就會耗盡。\n總部聯絡不上。門口兩位電動車車主問能不能幫忙。",
+    qs:[ { id:"1A-1", g:"soc", text:"營運模式？", applyTiers:true, opts:[["A","維持營業：一級＋二級"],["B","縮減營業：只開一級"],["C","照總部既有程序"]] },
+         { id:"1A-2", g:"tech", text:"哪些外部電源能在 1 小時內接進門市？要什麼條件？" },
+         { id:"1A-3", g:"gov", text:"總部失聯時，店長有權自己決定嗎？", opts:[["A","有權，事後追認"],["B","無權，須等授權"],["C","不確定"]] } ] },
+  { id:"1B", kind:"card", at:150, title:"狀況卡 1-B", sub:"門外的需求比電還多", time:"20:00",
+    story:"門市湧入兩、三百人，有人推著製氧機、帶著要冷藏的胰島素。\n市府與里辦公處失聯，沒人知道走不出家門的人在哪裡。",
+    qs:[ { id:"1B-1", g:"soc", text:"電不夠時，依什麼排序？", opts:[["A","醫療風險"],["B","登記名冊"],["C","先到先服務"]] },
+         { id:"1B-2", g:"gov", text:"要不要指定門市衛星作為基層通報點？由誰下令？", opts:[["A","要"],["B","不要"]] },
+         { id:"1B-3", g:"tech", text:"門市衛星的頻寬，能同時支援多少通報與報平安？" } ] },
+  { id:"1C", kind:"spare", title:"備用卡 1-C", sub:"鄰店切換失敗，病毒可能擴散", suggest:"隨時；之後抽「網攻」",
+    story:"隔壁門市的逆變器韌體遭竄改當機，可能透過網路感染其他門市。",
+    qs:[ { id:"1C-1", g:"tech", text:"示範門市要不要暫停與能源管理系統的連線？", link:true, opts:[["A","暫停連線"],["B","維持連線"]] } ] },
+  { id:"1D", kind:"spare", title:"備用卡 1-D", sub:"門口的手寫公告被改了", suggest:"21:00 後",
+    story:"「明早 8 點區公所發放物資」被改成「物資已發完，政府撤離」。門口開始騷動。",
+    qs:[ { id:"1D-1", g:"soc", text:"店長與里長要不要擔任傳遞官方訊息的人？", opts:[["A","要"],["B","不要"]] },
+         { id:"1D-2", g:"gov", text:"斷訊時，官方訊息怎麼送到門市、確保不被竄改？" } ] },
+  { id:"1E", kind:"spare", title:"備用卡 1-E", sub:"貨架商品，還是民眾的胰島素？", suggest:"18:00",
+    story:"隔壁店長想把上萬元的冰淇淋寄放進你的冷凍櫃。\n同一時間，門口有人拿著胰島素等著放進冰箱。",
+    qs:[ { id:"1E-1", g:"soc", text:"冷藏空間先給誰？", opts:[["A","民眾的藥品"],["B","鄰店商品"]] },
+         { id:"1E-2", g:"tech", text:"門市之間能否臨時拉線供電？需要什麼條件？" } ] },
+  { id:"1F", kind:"spare", title:"備用卡 1-F", sub:"總部終於傳來第一則訊息", suggest:"21:00",
+    story:"總部要求各門市「依標準作業程序暫停營業、保護資產」。\n門口還有十幾位民眾在等。",
+    qs:[ { id:"1F-1", g:"soc", text:"照總部指示關店，還是維持服務？", opts:[["A","暫停營業"],["B","維持服務"]] },
+         { id:"1F-2", g:"gov", text:"市府能否向門市下達指示？事後是否承認店長的決定？" } ] },
+];
+const EVENTS = [
+  { t:0,   text:"高雄全市停電，電話與行動網路中斷" },
+  { t:15,  story:true, title:"隔壁門市電量耗盡", text:"同一條街上沒有改造的門市，撐了 15 分鐘就全黑了。" },
+  { t:90,  story:true, title:"人潮湧進來", text:"下班、放學的人找不到地方去，都走向最近的便利商店。" },
+  { t:210, story:true, title:"訊號回來了一點", text:"移動通訊車進駐。總部、業者、市府，現在有機會聯絡上了。" },
+  { t:270, text:"國際媒體：「臺灣南部大停電、政府束手無策」" },
+  { t:330, text:"中央宣布柴油優先供應醫療、軍方與關鍵設施" },
+];
+const CLASHES = [
+  "技術組 → 治理組：車主的電接進店裡須經誰同意？設備損壞或有人觸電，誰負責、誰賠償？",
+  "治理組 → 社會組：店長在總部失聯時自行開放插座與冰箱，市府事後是否承認？要留下哪些紀錄？",
+  "社會組 → 技術組：外部電源接上後，夜間需要幾人看守？需要電工在場嗎？",
+];
+
+/* ============================================================
+   狀態與工具
+   ============================================================ */
+const S = { ready:false, hasDb:false, rid:null, ctl:null, st:{soc:{},tech:{},gov:{}}, ops:{}, needs:[], supply:[], runs:[],
+  view:"", tab:null, drawer:false, busy:false, unsubs:[], runsUnsub:null, pending:false, stale:false, writeErr:null,
+  modalQ:[], modalOpen:null, seen:new Set(), ciGroup:null, edit:null, rolling:null, flash:null, delta:null, me:null, draft:{} };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt1 = n => (Math.round(n*10)/10).toFixed(1);
+const dis = (cond, why) => cond ? ` aria-disabled="true" data-why="${esc(why)}"` : "";
+const ls = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} } };
+const DID = (()=>{ let d=ls.get("oasis3-did"); if(!d){ d="d"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); ls.set("oasis3-did",d); } return d; })();
+function hhmm(m){ const t=START_HHMM+Math.round(m); const mm=((t%1440)+1440)%1440; return { day:1+Math.floor(t/1440), s:String(Math.floor(mm/60)).padStart(2,"0")+":"+String(mm%60).padStart(2,"0") }; }
+const hm = m => hhmm(m).s;
+const clockLabel = m => { const h=hhmm(m); const sec=Math.floor(((m%1)+1)%1*60); return `第${["一","二","三"][h.day-1]||h.day}日 ${h.s}:${String(sec).padStart(2,"0")}`; };
+const STAGE_END = 360; // 第一階段結束 23:30（斷電後第 6 小時）
+const dur = m => { const t=Math.max(0,Math.floor(m*60)); const h=Math.floor(t/3600), mi=Math.floor(t%3600/60), se=t%60; return `${h}:${String(mi).padStart(2,"0")}:${String(se).padStart(2,"0")}`; };
+function goalHTML(big){
+  const T=simNow(), left=STAGE_END-T, R=D("batt")? run() : null;
+  const st = m => !R? `<span class="dim">？</span>` : (R.firstDark==null || R.firstDark>=m)? `<span class="ok">✓ 撐得到</span>` : `<span class="bad">✗ ${hm(R.firstDark)} 電量耗盡</span>`;
+  return `<div class="goal ${big?"big":""}"><div class="goal-main"><span class="eyebrow">第一階段目標</span><b>門市有電，撐到 23:30</b><span class="small muted">斷電後第 0～6 小時；最終要撐過第一個夜晚到 06:00 日出</span></div>
+    <div class="goal-cd"><span class="eyebrow">${left>0?"距 23:30 還有":"第一階段"}</span><b class="num" data-live="countdown">${left>0?dur(left):"已結束"}</b></div>
+    <div class="goal-st"><span>23:30 ${st(STAGE_END)}</span><span>06:00 ${st(SUNRISE-1)}</span></div>
+    <div class="goal-prog">${SEGS.map((g,i)=>`<span class="gp ${i<S.ctl.seg?"done":i===S.ctl.seg?"cur":""}">${["①","②","③","④","⑤"][i]} ${g.name.replace(/（.*?）|＋.*$/g,"")}</span>`).join("")}<span class="small muted">${S.ctl.seg>=0&&S.ctl.seg<4?`第一階段共 5 段，⑤ 上牆後結束`:"第一階段結束"}</span></div></div>`;
+}
+const stageOver = () => !!S.ctl && (S.ctl.seg>=4 || (S.ctl.seg===3 && simNow()>=STAGE_END));
+function endHTML(big){
+  if(!stageOver()) return "";
+  const R=run(), T=simNow(), needs=R.needs.filter(n=>n.at<=T), tot=needs.reduce((s,n)=>s+n.qty,0), got=needs.reduce((s,n)=>s+Math.min(n.qty,ST("soc").served?.[n.id]||0),0);
+  const ok2330 = R.firstDark==null || R.firstDark>=STAGE_END;
+  const live=R.arr.filter(a=>a.st==="live").map(a=>a.name);
+  const gaps=allSources().filter(def=>pipe(def.id).a?.how==="先做再說，事後追認").map(def=>def.name);
+  const tally={}; GKEYS.forEach(g=>Object.values(ST(g).answers||{}).forEach(a=>(a.tags||[]).forEach(t=>tally[t]=(tally[t]||0)+1)));
+  const top=Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${k} ${v}`).join("、")||"—";
+  return `<div class="endbox ${big?"big":""}"><div class="eyebrow">第一階段結束・第一日 23:30</div><b class="et">${ok2330?"✓ 門市撐到 23:30":"✗ 門市在 "+hm(R.firstDark)+" 電量耗盡"}${R.ok?"，照目前也撐得到 06:00 日出":""}</b>
+    <div class="endgrid"><div><span class="muted small">門外需求</span><b>${got}／${tot}</b></div><div><span class="muted small">接入的外部電源</span><b>${live.length?live.map(esc).join("、"):"無"}</b></div><div><span class="muted small">事後追認的授權</span><b>${gaps.length?gaps.map(esc).join("、"):"無"}</b></div><div><span class="muted small">最常卡在</span><b>${esc(top)}</b></div></div>
+    ${big?`<div class="row"><button data-act="drawer">打開「回溯修正」</button><span class="small muted">午餐時檢視不合理的假設，修正後向全場公告</span></div>`:""}
+    <div class="small">接下來：${S.ctl.seg>=4?"各組把成果帶到成果牆：社會組讀「門市服務量表」、技術組讀「技術準備清單」、治理組說明「哪些授權前提現在不存在」。":"主持人按「下一段」進入上牆。"}</div></div>`;
+}
+/* 流程關卡：時間停在關卡，等各組完成或主持人強制解鎖 */
+const HOLDS = [ { id:"h0", at:0, name:"抽儲能電量" }, { id:"h1", at:10, name:"營運模式" }, { id:"h2", at:90, name:"開放門外" } ];
+function simNow(){ const r=rawNow(); for(const h of HOLDS){ if(!S.ctl?.rel?.[h.id] && r>h.at) return h.at; } return r; }
+function heldAt(){ if(!S.ctl || S.ctl.seg<0) return null; const r=rawNow(); return HOLDS.find(h=>!S.ctl?.rel?.[h.id] && r>=h.at) || null; }
+const passed = id => !!S.ctl?.rel?.[id];
+function holdWaits(h){
+  const w=[];
+  if(h.id==="h1"){
+    if(!Object.values(ST("tech").prop||{}).some(Boolean)) w.push(["tech","提出至少一個電源方案"]);
+    if(!ST("soc").answers?.["1A-1"]?.choice) w.push(["soc","決定營運模式"]);
+    if(!ST("gov").answers?.["1A-3"]?.choice) w.push(["gov","店長有權自己決定嗎？"]);
+  }
+  if(h.id==="h0" && !D("batt")) w.push(["host", (S.ctl?.seg===0 && !S.ctl?.read)? "宣讀情境" : "抽「儲能電量」"]);
+  if(h.id==="h2" && !ST("gov").mode) w.push(["gov","決定能否開放冰箱、插座"]);
+  return w;
+}
+function release(h, force){
+  const c=S.ctl, seg=SEGS[c.seg], span=seg.s1-seg.s0, now=c.pausedAt||Date.now();
+  const patch={ rel:{ ...(c.rel||{}), [h.id]: force?"force":true } };
+  if(span>0 && h.at>=seg.s0 && h.at<=seg.s1) patch.segStart = now - (h.at-seg.s0)/span*seg.real*60000;
+  return ctlUpdate(patch);
+}
+function rawNow(){
+  const c=S.ctl; if(!c || c.seg==null || c.seg<0) return 0;
+  const seg=SEGS[c.seg]; if(!seg) return 360;
+  return seg.s0 + (seg.s1-seg.s0)*Math.min(1,Math.max(0,((c.pausedAt||Date.now())-c.segStart)/60000/seg.real));
+}
+const nowM = () => Math.round(simNow());
+function realLeft(){ const c=S.ctl; if(!c||c.seg<0) return null; return Math.max(0, SEGS[c.seg].real*60000-((c.pausedAt||Date.now())-c.segStart)); }
+const commRed = m => m < COMM_RESTORE;
+const ST = g => S.st[g] || {};
+const myG = () => S.me?.g || null;
+const isOp = g => !!g && S.ops[g]?.did === DID;
+
+/* ---------- 抽籤 ---------- */
+function D(id){ const d=S.ctl?.draws?.[id]; if(!d || d.i==null) return null; const def=DRAWS.find(x=>x.id===id); return { ...d, o:def.opts[d.i], def }; }
+const capNow = () => (S.ctl?.cap||13.5) * (D("batt")?.o.v ?? 1);
+
+/* ---------- 三組流程 ---------- */
+const satAt = () => ST("tech").sat?.at ?? null;
+const chAt = () => { const s=satAt(); return s==null? COMM_RESTORE : Math.min(s,COMM_RESTORE); };
+const linkOffAt = () => ST("tech").linkOffAt ?? null;
+function verdictOf(id){ const v=S.ctl?.verdicts?.[id], p=ST("tech").prop?.[id]; return v && p && v.propAt===p.at ? v : null; }
+const verOf = p => p?.ver || 1;
+function retsOf(id, ver){ return [...(ST("soc").ret?.[id]||[]),...(ST("gov").ret?.[id]||[])].filter(x=>ver==null || x.ver===ver).sort((a,b)=>a.at-b.at); }
+const retLimit = () => S.ctl?.retLimit ?? 2;
+const roundsUsed = id => { const p=ST("tech").prop?.[id]; return p? verOf(p)-1 : 0; };
+function pipe(id){
+  const p=ST("tech").prop?.[id], ver=verOf(p), v=verdictOf(id);
+  let u=ST("soc").use?.[id]; if(u && (u.ver||1)!==ver) u=null;
+  let a=ST("gov").auth?.[id]; if(a && (a.ver||1)!==ver) a=null;
+  const rets = p? retsOf(id,ver) : [], ret=rets[rets.length-1]||null;
+  const s=[];
+  s.push(p? { k:"tech", st: ret?"wait":"done", t:p.at, label: ret? `第${ver}版・被${GROUPS[ret.by].name}退回` : (ver>1?`第${ver}版`:"") } : { k:"tech", st:"wait" });
+  if(!p) s.push({ k:"judge", st:"todo" });
+  else if(!v) s.push({ k:"judge", st:"wait" });
+  else s.push({ k:"judge", st: v.v==="不可行"?"no":"done", t:v.at, label:v.v });
+  const ok2 = s[1].st==="done" && !ret;
+  if(ret && ret.by==="soc") s.push({ k:"soc", st:"no", label:"退回提問" });
+  else if(!ok2) s.push({ k:"soc", st: ret? "done":"todo", label: ret&&u? "使用":"" }); else if(!u) s.push({ k:"soc", st:"wait" }); else s.push({ k:"soc", st:u.v==="no"?"no":"done", t:u.at, label:u.v==="no"?"不使用":"使用" });
+  const ok3 = s[2].st==="done" && !ret;
+  if(ret && ret.by==="gov") s.push({ k:"gov", st:"no", label:"退回提問" });
+  else if(!ok3) s.push({ k:"gov", st:"todo" }); else if(!a) s.push({ k:"gov", st:"wait" }); else s.push({ k:"gov", st:a.liab==="不授權"?"no":"done", t:a.at, label:a.liab==="不授權"?"不授權":"責任："+a.liab });
+  const ok4 = s[3].st==="done", da = ok4? deliverAt(a) : null, T=simNow();
+  if(!ok4) s.push({ k:"deliver", st:"todo" });
+  else if(!a.how) s.push({ k:"deliver", st:"wait" });
+  else if(da==null) s.push({ k:"deliver", st:"wait", label:"等門市衛星" });
+  else s.push({ k:"deliver", st: da<=T?"done":"wait", t:da, label:(da<=T?"":hm(da)+" ")+a.how });
+  const gate = (ok4 && da!=null) ? Math.max(p.at, v.at, u.at, da) : null;
+  const x = gate==null ? null : srcState(id, gate);
+  if(gate==null) s.push({ k:"arrive", st:"todo" });
+  else s.push({ k:"arrive", st: x.st==="live"?"done": x.st==="fail"?"no":"wait", t:x.at, label: x.st==="live"? hm(x.at)+" 接入" : x.st==="coming"? hm(x.at)+" 到" : x.st==="draw"? drawWaitLabel(id) : x.why });
+  let who=null;
+  if(s[1].st==="no" || ret) who="tech"; else { const w=s.find(z=>z.st==="wait"); if(w && w.k!=="arrive"){ who = w.k==="judge"?"host" : w.k==="deliver"? (a?.how? (da==null?"tech":null) : "gov") : w.k; } }
+  return { steps:s, gate, x, who, p, v, u, a, ret, ver };
+}
+function threadHTML(id){
+  const p=ST("tech").prop?.[id]; if(!p) return "";
+  const hist=[...(ST("tech").hist?.[id]||[]), p], rets=retsOf(id,null); if(!rets.length && hist.length<2) return "";
+  return `<div class="thread">${hist.map(h=>{ const v=verOf(h); const rs=rets.filter(r=>r.ver===v); const nx=hist.find(x=>verOf(x)===v+1);
+    return `<div class="th-v"><b>第${v}版</b> <span class="dim">${hm(h.at)}</span> ${(h.safe||[]).map(esc).join("、")}｜${esc(h.rule||"")}${h.note?"｜"+esc(h.note):""}</div>${rs.map(r=>`<div class="th-q">${gtag(r.by)} 提問${(r.tags||[]).length?"［"+r.tags.map(esc).join("、")+"］":""}：${esc(r.q)}</div>`).join("")}${nx?.reply?`<div class="th-a">${gtag("tech")} 回覆：${esc(nx.reply)}</div>`:""}`; }).join("")}</div>`;
+}
+function retFormHTML(g,def){
+  const pp=pipe(def.id), left=retLimit()-roundsUsed(def.id), k="r"+g+def.id, dr=S.draft[k]||{ tags:[] };
+  if(left<=0) return `<div class="small muted">已達退回上限（${retLimit()} 次），請直接決定。</div>`;
+  return `<details class="retbox"><summary>提問／退回技術組修正（還可退回 ${left} 次）</summary>
+    <div class="tags"><span class="dim small">卡在</span>${STUCK.map(t=>`<button class="tg ${(dr.tags||[]).includes(t)?"on":""}" data-act="rdraft" data-g="${g}" data-id="${def.id}" data-v="${t}">${t}</button>`).join("")}</div>
+    <input data-input="rq" data-g="${g}" data-id="${def.id}" placeholder="你的問題或評價，例如：夜間誰看守？" value="${esc(dr.q||"")}">
+    <div class="row"><button class="primary" data-act="retgo" data-g="${g}" data-id="${def.id}"${opDis(g)}>退回技術組</button></div></details>`;
+}
+const STEPNAME = { tech:"技術提案", judge:"判定", soc:"店長決定", gov:"治理授權", deliver:"授權送達", arrive:"到位" };
+const DELIVER = [ { v:"透過門市衛星", note:"技術組啟用衛星後立即送達" }, { v:"派人送書面", note:"約 1 小時" }, { v:"先做再說，事後追認", note:"立即，但記為授權缺口" } ];
+function deliverAt(a){ if(!a?.how || a.hAt==null) return null; if(a.how==="透過門市衛星"){ const s=satAt(); return s==null? null : Math.max(a.hAt,s); } if(a.how==="派人送書面") return a.hAt+60; return a.hAt; }
+function srcState(id, gate){
+  const cr=S.ctl?.corr?.[id]; if(cr?.void) return { st:"fail", why:"控制組修正：不成立" };
+  const pen = (linkOffAt()!=null && linkOffAt()<=gate) ? LINK_PENALTY : 0;
+  const T=simNow(), timed=(at,x)=>({ st: at<=T? "live":"coming", at, ...x });
+  if(id==="R1-2"){ const d=D("ev"); if(!d) return { st:"draw" }; if(!d.o.n) return { st:"fail", why:"車主不借" }; return timed(Math.max(gate+30+pen,d.at),{ kwh:d.o.kwh, n:d.o.n }); }
+  if(id==="R1-3"){
+    let c=gate; const how=ST("tech").prop?.[id]?.method;
+    if(how==="等通訊恢復") c=Math.max(c,COMM_RESTORE);
+    if(how==="用門市衛星"){ const s=satAt(); if(s==null) return { st:"blocked", why:"衛星未啟用" }; c=Math.max(c,s); }
+    const d=D("swap"); if(!d) return { st:"draw" }; if(!d.o.e) return { st:"fail", why:"無法開通" };
+    return timed(Math.max(c+60+pen,d.at),{ kwh:d.o.e });
+  }
+  if(id.startsWith("c-")){ const def=allSources().find(x=>x.id===id); if(!def) return { st:"none" }; return timed(Math.max(gate+def.lead+pen, def.drawAt),{ kwh:def.kwh }); }
+  if(id==="R1-4"){ const c=Math.max(gate,chAt()); const d=D("mobile"); if(!d) return { st:"draw" }; if(d.o.lead==null) return { st:"fail", why:"調往醫院" }; return timed(Math.max(c+d.o.lead+pen,d.at),{ kwh:50 }); }
+  return { st:"none" };
+}
+/* 開放門外：治理組決定 → （必要時）授權書 */
+function letterAt(){ const l=ST("gov").letter; return l?.at!=null ? Math.max(l.at, chAt()) : null; }
+function openAt(scope){
+  if(S.ctl?.corr?.open?.void) return null;
+  const m=ST("gov").mode; if(!m) return null;
+  if(m.v===MODES[2]) return null;
+  if(m.v===MODES[0]) return m.at;
+  const l=ST("gov").letter, la=letterAt(); if(la==null || !(l.scope||[]).includes(scope)) return null;
+  return la;
+}
+function openWhy(scope){
+  const m=ST("gov").mode; if(!m) return "等治理組決定能否開放";
+  if(m.v===MODES[2]) return "治理組：不得開放";
+  if(m.v===MODES[1]){ const l=ST("gov").letter; if(l?.at==null) return "等治理組簽發授權書"; if(!(l.scope||[]).includes(scope)) return "授權書未含「"+scope+"」"; if(letterAt()>simNow()) return "授權書 "+hm(letterAt())+" 送達"; }
+  return "";
+}
+function r17At(){ const r=ST("soc").r17; if(!r?.at && r?.at!==0) return null; if(r.how==="透過門市衛星"){ const s=satAt(); return s==null? null : Math.max(r.at,s)+60; } return r.at+(r.how==="等里長自己來"?120:60); }
+function needList(){
+  const out=[], w=D("walkin");
+  if(w) [["w-ox","oxygen","走進門市",w.o.ox],["w-in","insulin","走進門市",w.o.ins],["w-fr","fridge","附近診所",w.o.fr]].forEach(([id,kind,who,qty])=>{ if(qty) out.push({ id, kind, who, qty, at:w.at }); });
+  (S.ctl?.pool||[]).filter(x=>x.t==="need").forEach(x=>{ const c=S.needs.find(n=>n.id===x.id); if(c && c.pkind) out.push({ id:"c-"+x.id, kind:c.pkind, who:c.unit||c.no, qty:+c.pqty||1, at:x.at }); });
+  const h=D("home"), s=r17At();
+  if(h && s!=null){ const at=Math.max(h.at,s); [["h-ox","oxygen","居家",h.o.ox],["h-cp","cpap","居家",h.o.cp]].forEach(([id,kind,who,qty])=>{ if(qty) out.push({ id, kind, who, qty, at }); }); }
+  return out;
+}
+function outage(){ const d=D("attack"); if(!d || !d.o.hit) return null; const off=linkOffAt(); if(off!=null && off<=d.at) return null; return { a:d.at, b:d.at+ATTACK_OUTAGE }; }
+
+/* ---------- 模擬（逐分鐘 17:30 → 06:00） ---------- */
+function parts(st, needs, m){
+  const o={ t1:0, t2:0, t3:0, out:0 };
+  TIERS.forEach(t=>{ if(st.tiers?.[t.t]!==false) o["t"+t.t]=t.kw; });
+  if(!S.ctl?.corr?.open?.void) needs.forEach(n=>{ if(n.at<=m) o.out += Math.min(n.qty, st.served?.[n.id]||0)*LOADS[n.kind].kw; });
+  return o;
+}
+let runCache={ key:"", val:null };
+const previewCache={ key:"", val:null };
+function run(T, ov){
+  T = T ?? simNow(); const Tm=Math.floor(T);
+  const key=Tm+"|"+JSON.stringify([S.st,S.ctl?.draws,S.ctl?.verdicts,S.ctl?.cap,S.ctl?.pool,S.ctl?.rel,S.ctl?.corr,S.needs.filter(n=>n.pool),S.supply.filter(n=>n.pool),ov||null]);
+  const cache = ov? previewCache : runCache;
+  if(cache.key===key) return cache.val;
+  const soc=ST("soc"), needs=needList(), log=(soc.log||[]).slice().sort((a,b)=>a.t-b.t);
+  const arr=[], wait=[], fail=[];
+  allSources().forEach(s=>{ const pp=pipe(s.id); if(pp.x?.at!=null) arr.push({ ...s, ...pp.x }); else if(pp.x && (pp.x.st==="draw"||pp.x.st==="blocked")) wait.push(s); else if(pp.x?.st==="fail") fail.push(s); });
+  if(ov?.extra) ov.extra.forEach(x=>{ if(!arr.some(a=>a.id===x.id)) arr.push({ ...x, st: x.at<=T?"live":"coming" }); });
+  const out=outage(), cap=capNow();
+  let pool=cap, evE=0, evN=0, used=0, li=0, st={ tiers:{1:true,2:true,3:true}, served:{} };
+  const lit=new Array(SUNRISE), added=new Set(), fut={ t1:0, t2:0, t3:0, out:0 };
+  let usedNow=0, kwNow=0;
+  for(let m=0;m<SUNRISE;m++){
+    while(li<log.length && log[li].t<=m){ st=log[li]; li++; }
+    if(ov?.tiers && m>=Tm) st={ ...st, tiers:ov.tiers };
+    arr.forEach(a=>{ if(!added.has(a.id) && a.at<=m){ added.add(a.id); if(a.id==="R1-2"){ evE+=a.kwh; evN=a.n; } else pool+=a.kwh; } });
+    const pt=parts(st,needs,m), kw=pt.t1+pt.t2+pt.t3+pt.out;
+    if(m===Tm){ usedNow=used; kwNow=kw; }
+    if(m>=Tm) for(const k in fut) fut[k]+=pt[k]/60;
+    if(out && m>=out.a && m<out.b){ lit[m]=false; continue; }
+    const need=kw/60, ev=Math.min(evE, Math.min(evN*EV_KW,kw)/60), rest=need-ev;
+    if(rest<=pool+1e-9){ pool-=rest; evE-=ev; used+=need; lit[m]=true; } else lit[m]=false;
+  }
+  const segs=[]; for(let m=0;m<SUNRISE;m++){ const l=lit[m], last=segs[segs.length-1]; if(last && last.lit===l) last.b=m+1; else segs.push({ a:m, b:m+1, lit:l }); }
+  let firstDark=null; for(let m=Tm;m<SUNRISE;m++) if(!lit[m]){ firstDark=m; break; }
+  const supTot=cap+arr.reduce((s,a)=>s+a.kwh,0), demTot=usedNow+fut.t1+fut.t2+fut.t3+fut.out, hrs=Math.max(0,(SUNRISE-T)/60);
+  const ovd=!!S.ctl?.corr?.open?.void;
+  const unmet=needs.filter(n=>n.at<=T).map(n=>({ ...n, miss:n.qty-(ovd?0:Math.min(n.qty,soc.served?.[n.id]||0)) })).filter(n=>n.miss>0);
+  const ghost=unmet.reduce((s,n)=>s+n.miss*LOADS[n.kind].kw*hrs,0);
+  const val={ T, cap, arr, wait, fail, segs, firstDark, darkNow:!lit[Math.min(Tm,SUNRISE-1)], usedNow, kwNow, fut, supTot, demTot, diff:supTot-demTot, unmet, ghost, needs, ok:firstDark==null, out };
+  if(ov){ previewCache.key=key; previewCache.val=val; } else runCache={ key, val }; return val;
+}
+const balDiff = () => { try{ return run().diff; }catch(e){ return null; } };
+const tlPct = m => Math.max(0,Math.min(100,m/SUNRISE*100));
+const firstShed = () => { const l=(ST("soc").log||[]).slice().sort((a,b)=>a.t-b.t).find(x=>x.tiers?.[3]===false); return l? l.t : null; };
+function cardReleased(sc){ const c=S.ctl; if(!c || c.seg<0) return false; if(sc.kind==="spare") return (c.injects||[]).includes(sc.id); return simNow()>=sc.at; }
+const qsFor = g => SCARDS.filter(cardReleased).flatMap(sc=>sc.qs.filter(q=>q.g===g));
+const answered = (g,q) => { const a=ST(g).answers?.[q.id]; return !!(a?.choice || a?.sent!=null); };
+
+/* 輪到誰：每組待辦 */
+function todo(g){
+  const T=simNow(), out=[], R=run();
+  if(S.ctl?.seg<0) return out;
+  const h=heldAt(); if(h) holdWaits(h).filter(x=>x[0]===g).forEach(x=>out.push({ t:"⏸ "+x[1], tab: g==="tech"?"src": g==="gov"&&h.id==="h2"?"auth":"dec", hold:true }));
+  allSources().forEach(s=>{ const pp=pipe(s.id);
+    if(g==="tech" && !pp.p) out.push({ t:`提出「${s.name}」方案`, tab:"src" });
+    if(g==="tech" && pp.steps[1].st==="no") out.push({ t:`「${s.name}」判定不可行：修改方案`, tab:"src" });
+    if(g==="soc" && pp.who==="soc") out.push({ t:`決定是否使用「${s.name}」`, tab:"src" });
+    if(g==="gov" && pp.who==="gov") out.push({ t:`「${s.name}」出事誰負責？`, tab:"auth" });
+  });
+  if(g==="tech" && satAt()==null && T>=10) out.push({ t:"啟用門市衛星", tab:"sec" });
+  if(g==="gov" && !ST("gov").mode && T>=10) out.push({ t:"店長能不能開放冰箱、插座給門外？", tab:"auth" });
+  if(g==="gov" && ST("gov").mode?.v===MODES[1] && ST("gov").letter?.at==null) out.push({ t:"簽發緊急授權書", tab:"auth" });
+  if(g==="soc"){ const miss=R.unmet.reduce((s,n)=>s+n.miss,0); if(miss) out.push({ t:`門外還有 ${miss} 個需求沒接住`, tab:"need" }); if(T>=150 && !ST("soc").r17?.at && ST("soc").r17?.at!==0) out.push({ t:"派巡守隊找居家使用者", tab:"src" }); }
+  qsFor(g).filter(q=>!answered(g,q) && !(h && h.id==="h1" && ["1A-1","1A-3"].includes(q.id))).forEach(q=>out.push({ t:"回答："+q.text, tab:"dec" }));
+  return out;
+}
+const hostTodo = () => allSources().filter(s=>pipe(s.id).who==="host");
+
+/* ============================================================
+   資料庫
+   ============================================================ */
+let dbAPI=null;
+const P = (...a) => ["runs",S.rid,...a].join("/");
+function sub(ref, fn){ S.unsubs.push(ref.onSnapshot(fn, e=>{ console.warn(e); S.writeErr="資料連線中斷（"+e.code+"），請重新整理。"; scheduleRender(); })); }
+function watchRun(rid){
+  S.unsubs.forEach(u=>u()); S.unsubs=[];
+  Object.assign(S,{ rid, ctl:null, st:{soc:{},tech:{},gov:{}}, ops:{}, needs:[], supply:[] });
+  S.me = rid ? JSON.parse((()=>{ try{ return sessionStorage.getItem("oasis3-me-"+rid); }catch(e){ return null; } })() || "null") : null;
+  S.draft.name = S.draft.name || ls.get("oasis3-name") || "";
+  S.seen = new Set(JSON.parse((rid && ls.get("oasis3-seen-"+rid)) || "[]"));
+  S.tab=null;
+  if(!rid){ scheduleRender(); return; }
+  sub(dbAPI.doc("runs/"+rid), s=>{ S.ctl=s.exists? s.data():null; scheduleRender(); });
+  sub(dbAPI.collection(P("state")), q=>{ const o={soc:{},tech:{},gov:{}}; q.docs.forEach(d=>o[d.id]=d.data()); GKEYS.forEach(g=>{ if(!(isOp(g) && S.localAt?.[g] && Date.now()-S.localAt[g]<1500)) S.st[g]=o[g]; }); scheduleRender(); });
+  sub(dbAPI.collection(P("ops")), q=>{ const o={}; q.docs.forEach(d=>o[d.id]=d.data()); S.ops=o; scheduleRender(); });
+  sub(dbAPI.collection(P("needs")).orderBy("createdAt"), q=>{ S.needs=q.docs.map(d=>({id:d.id,...d.data()})); scheduleRender(); });
+  sub(dbAPI.collection(P("supply")).orderBy("createdAt"), q=>{ S.supply=q.docs.map(d=>({id:d.id,...d.data()})); scheduleRender(); });
+}
+function watchRuns(){ if(S.runsUnsub || !dbAPI) return; S.runsUnsub = dbAPI.collection("runs").orderBy("createdAt","desc").limit(30).onSnapshot(q=>{ S.runs=q.docs.map(d=>({id:d.id,...d.data()})); scheduleRender(); }, ()=>{}); }
+async function w(promise){
+  try{ await promise; S.writeErr=null; return true; }
+  catch(e){ console.warn(e); S.writeErr = e.code==="invalid_argument" ? "這個帳號沒有寫入權限：請主辦方用 Share 把你設為 Contributor 以上。" : "儲存失敗（"+(e.code||"錯誤")+"），請再試一次。"; scheduleRender(); return false; }
+}
+const debouncers={}; const debounced=(k,fn,ms=700)=>{ clearTimeout(debouncers[k]); debouncers[k]=setTimeout(fn,ms); };
+async function createRun(name){
+  if(S.busy) return; S.busy=true; render();
+  const rid="d1v3-"+Date.now().toString(36), nm=name||"D1 推演";
+  if(await w(dbAPI.doc("runs/"+rid).set({ name:nm, v:3, createdAt:Date.now(), seg:-1, segStart:0, pausedAt:null, cap:13.5, injects:[], draws:{}, verdicts:{}, clash:null }))){
+    await w(dbAPI.doc("config/current").set({ rid, name:nm, at:Date.now() })); toast("已建立「"+nm+"」");
+  }
+  S.busy=false; render();
+}
+const ctlUpdate = patch => w(dbAPI.doc("runs/"+S.rid).update(patch));
+function gotoSeg(i){ i=Math.max(-1,Math.min(SEGS.length-1,i)); const rel={ ...(S.ctl.rel||{}) }; if(i>=0) HOLDS.forEach(h=>{ if(!rel[h.id] && h.at<SEGS[i].s0) rel[h.id]="force"; }); ctlUpdate({ seg:i, segStart:Date.now(), pausedAt:null, rel }); }
+function togglePause(){ const c=S.ctl; if(c.pausedAt) ctlUpdate({ pausedAt:null, segStart:c.segStart+(Date.now()-c.pausedAt) }); else ctlUpdate({ pausedAt:Date.now() }); }
+/* 每組的資料只由該組的操作手機寫入（整份覆寫，避免互相蓋掉） */
+function saveSt(g, patch){
+  if(!isOp(g)){ toast("你不是"+GROUPS[g].name+"的操作手機"); return false; }
+  const next={ ...ST(g), ...patch }; S.st[g]=next; S.localAt={ ...(S.localAt||{}), [g]:Date.now() }; runCache.key="";
+  w(dbAPI.doc(P("state",g)).set(next)); return true;
+}
+function writeStore(patch){
+  const s=ST("soc"), t=nowM();
+  const st={ tiers:{1:true,2:true,3:true, ...(s.tiers||{})}, served:{...(s.served||{})}, ...patch };
+  const log=(s.log||[]).slice(), last=log[log.length-1], entry={ t, tiers:st.tiers, served:st.served };
+  if(last && t-last.t<=1) log[log.length-1]={ ...entry, t:last.t }; else log.push(entry);
+  return saveSt("soc",{ tiers:st.tiers, served:st.served, log });
+}
+function saveAnswer(g, qid, patch){ const a={ ...(ST(g).answers?.[qid]||{}), ...patch, t:nowM() }; return saveSt(g,{ answers:{ ...(ST(g).answers||{}), [qid]:a } }); }
+async function becomeOp(name, g){
+  const me={ name, g }; S.me=me; ls.set("oasis3-name", name); try{ sessionStorage.setItem("oasis3-me-"+S.rid, JSON.stringify(me)); }catch(e){}
+  if(g!=="obs") await w(dbAPI.doc(P("ops",g)).set({ name, did:DID, at:Date.now() }));
+  S.tab=null;
+}
+
+/* ============================================================
+   說明視窗
+   ============================================================ */
+function introStory(g){ return { id:"intro-"+g, kicker:"2026 秋・高雄前金區・週一 17:30", title:"前金區最後一盞燈", text:"全市停電，手機沒有訊號，總部聯絡不上。\n全場只有一家亮著的全家門市。\n\n"+(GROUPS[g]?.intro||"你在旁觀看，跟著主螢幕一起討論。"), btn:"開始" }; }
+function queueStory(s){ if(S.seen.has(s.id) || S.modalQ.some(x=>x.id===s.id) || S.modalOpen?.id===s.id) return; S.modalQ.push(s); showNextStory(); }
+let typeTimer=null;
+function showNextStory(){
+  if(S.modalOpen || !S.modalQ.length) return;
+  const s=S.modalOpen=S.modalQ.shift(), root=$("#modal-root");
+  root.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="st-title"><div class="story ${s.cls||""}">
+    <div class="kicker">${esc(s.kicker||"")}</div><h2 id="st-title">${esc(s.title)}</h2>
+    <div class="text caret ${s.big?"big":""}" id="st-text"></div>
+    <div class="row" style="justify-content:flex-end">${s.btn2?`<button id="st-btn2">${esc(s.btn2)}</button>`:""}<button class="primary" id="st-btn">${esc(s.btn||"繼續")}</button></div></div></div>`;
+  const el=$("#st-text"), full=s.text; let i=0;
+  const finish=()=>{ clearInterval(typeTimer); el.textContent=full; el.classList.remove("caret"); };
+  if(s.big || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) finish(); else typeTimer=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length) finish(); },32);
+  el.addEventListener("click",finish);
+  $("#st-btn2")?.addEventListener("click",()=>{ S.seen.add(s.id); ls.set("oasis3-seen-"+S.rid, JSON.stringify([...S.seen])); S.modalOpen=null; root.innerHTML=""; showNextStory(); scheduleRender(); });
+  $("#st-btn").addEventListener("click",()=>{
+    if(el.classList.contains("caret")){ finish(); return; }
+    S.seen.add(s.id); ls.set("oasis3-seen-"+S.rid, JSON.stringify([...S.seen]));
+    S.modalOpen=null; root.innerHTML=""; if(s.then) s.then(); showNextStory(); scheduleRender();
+  });
+  $("#st-btn").focus();
+}
+function checkStories(){
+  if(S.view!=="play" || !S.me || !S.ctl) return;
+  const c=S.ctl, g=myG();
+  Object.entries(c.draws||{}).forEach(([id,d])=>{ if(d?.i==null || Date.now()-(d.ts||0)>120000) return; const x=D(id); queueStory({ id:"d-"+id+"-"+d.ts, kicker:"抽籤結果・"+hm(d.at), title:x.def.name, text:x.o.l, big:true, cls:"draw", btn:"知道了" }); });
+  (c.notices||[]).forEach(n=>{ if(Date.now()-(n.ts||0)>300000) return; queueStory({ id:"notice-"+n.ts, kicker:"控制組・"+hm(n.at), title:"修正公告", text:n.text, cls:"alarm", btn:"知道了" }); });
+  (c.pool||[]).forEach(x=>{ if(Date.now()-(x.ts||0)>120000) return; const cd=(x.t==="need"?S.needs:S.supply).find(y=>y.id===x.id); if(cd) queueStory({ id:"pool-"+x.ts, kicker:"抽籤結果・"+hm(x.at), title:x.t==="need"?"報到需求卡":"供給自評表", text:poolLabel(x.t,cd), big:true, cls:"draw", btn:"知道了" }); });
+  if(c.seg<0) return;
+  const T=simNow();
+  queueStory(introStory(g));
+  if(c.seg>=1) queueStory({ id:"start", kicker:"第一日 17:30", title:"整座城市暗了", text:"店裡還亮著，但冷氣、招牌、咖啡機也都還開著。" });
+  EVENTS.filter(e=>e.story && T>=e.t).forEach(e=>queueStory({ id:"ev"+e.t, kicker:hm(e.t), title:e.title, text:e.text }));
+  SCARDS.filter(cardReleased).forEach(sc=>queueStory({ id:"sc"+sc.id, kicker:sc.title+(sc.time?"・"+sc.time:""), title:sc.sub, text:sc.story, btn: sc.qs.some(q=>q.g===g)?"去作答":"知道了", cls:sc.kind==="spare"?"alarm":"", then:()=>{ if(sc.qs.some(q=>q.g===g)) S.tab="dec"; } }));
+  if(stageOver()) queueStory({ id:"night", kicker:"第一日 23:30", title:"第一階段結束", text:"把門市服務量表與技術準備清單帶到成果牆。", btn:"知道了" });
+}
+
+/* ============================================================
+   畫面
+   ============================================================ */
+function scheduleRender(){
+  if(S.view==="play" && !S.me && $('form[data-form="join"]')) return; // 選組畫面不被資料更新打斷
+  const a=document.activeElement;
+  if(a && (a.tagName==="TEXTAREA" || (a.tagName==="INPUT" && !["checkbox","radio"].includes(a.type))) && $("#app").contains(a)){ S.pending=true; return; }
+  render();
+}
+document.addEventListener("focusout",()=>setTimeout(()=>{ if(S.pending){ S.pending=false; scheduleRender(); } },60));
+function render(){
+  runCache.key="";
+  let html;
+  if(!S.ready) html=`<div class="landing"><p class="muted">連線中…</p></div>`;
+  else if(S.view==="console") html=viewConsole();
+  else if(S.view==="wall") html=viewWall();
+  else if(S.view==="play") html=viewPlay();
+  else if(S.view==="checkin") html=viewCheckin();
+  else html=viewLanding();
+  $("#app").innerHTML=html;
+  tick();
+}
+function banners(){
+  let b="";
+  if(!S.hasDb) b+=`<div class="banner">連不上雲端資料庫。請確認網路連線；若持續出現，請主持人檢查 Firebase 設定。</div>`;
+  if(S.writeErr) b+=`<div class="banner">${esc(S.writeErr)}</div>`;
+  if(S.stale) b+=`<div class="banner">資料暫時連不上，畫面可能不是最新狀態。</div>`;
+  if(S.ctl && S.ctl.v!==3) b+=`<div class="banner">這個場次是舊版建立的，新版無法使用。請到主控台按「主控」→「場次」建立新場次。</div>`;
+  return b;
+}
+const noRun=`<div class="panel warn">尚未建立場次。</div>`;
+const foot=`<p class="foot">工作坊推演用情境，非全家便利商店官方系統。數據依《城市能源綠洲演習手冊》第十一版估算。</p>`;
+const gtag = g => GROUPS[g] ? `<span class="${GROUPS[g].cls} gpill">${GROUPS[g].name}</span>` : g==="host"? `<span class="warn gpill">主持人</span>` : "";
+
+function viewLanding(){
+  return `<div class="landing">${banners()}
+    <div class="stack"><div class="eyebrow">URBAN ENERGY OASIS · D1</div><h1>前金區<br>最後一盞燈</h1>
+      ${S.rid? `<p class="muted">場次：<b>${esc(S.ctl?.name||S.rid)}</b></p>` : `<p class="warn">尚未建立場次</p>`}</div>
+    <div class="roles">
+      <a class="role main" href="#play"><span class="eyebrow">各組操作手機</span><b>社會組・技術組・治理組</b></a>
+      <a class="role" href="#console"><span class="eyebrow">主螢幕・主持人</span><b>主控台與抽籤</b></a>
+      <a class="role" href="#wall"><span class="eyebrow">副螢幕</span><b>成果牆</b></a>
+      <a class="role" href="#checkin"><span class="eyebrow">報到</span><b>需求卡／供給自評表</b></a>
+    </div>${foot}</div>`;
+}
+
+/* ---------- 共用元件：供需平衡圖 ---------- */
+function balHTML(big, ov){
+  if(!D("batt")) return `<div class="bal ${big?"bigbal":""}"><div class="bal-head"><div class="verdict" style="color:var(--muted)">等待抽籤</div><div class="bal-num"><b style="color:var(--muted)">0.0</b><span>度・供給−需求</span></div></div>
+    <div class="sd"><div class="sd-row"><span class="lbl muted">供給</span><div class="track"></div><span class="val muted">0 度</span></div><div class="sd-row"><span class="lbl muted">需求</span><div class="track"></div><span class="val muted">0 度</span></div></div></div>`;
+  const R=run(undefined, ov), {T}=R, max=Math.max(R.supTot, R.demTot+R.ghost, 1);
+  const color=R.ok?"var(--green)":"var(--red)";
+  const verdict = R.ok ? "撐得到 06:00 日出" : R.darkNow ? (R.out && T>=R.out.a && T<R.out.b ? "網攻：門市停擺中" : "門市現在全黑") : `${hm(R.firstDark)} 電量耗盡`;
+  const d=S.delta && Date.now()-S.delta.at<9000 ? S.delta : null;
+  const seg=x=>`<i class="${x.cls||""}" style="width:${x.v/max*100}%;background:${x.color}" title="${esc(x.label)} ${fmt1(x.v)} 度"></i>`;
+  const sup=[{ label:"儲能", v:R.cap, color:"#ffe7a3" }, ...R.arr.map(a=>({ label:a.name, v:a.kwh, color:a.color, cls:a.st==="coming"?"pend":"", at:a.at, coming:a.st==="coming" }))];
+  const dem=[{ label:"已用", v:R.usedNow, color:"#3a4a55" },{ label:"一級", v:R.fut.t1, color:"#ff8b3d" },{ label:"二級", v:R.fut.t2, color:"#f3c531" },{ label:"三級", v:R.fut.t3, color:"#8a99a1" },{ label:"門外", v:R.fut.out, color:"#ff9db1" }];
+  if(R.ghost>0.05) dem.push({ label:"沒接住", v:R.ghost, color:"transparent", cls:"ghost" });
+  const legS = sup.map(x=>`<span><i class="${x.cls||""}" style="background:${x.color}"></i>${esc(x.label)} ${fmt1(x.v)} 度${x.coming?` <span class="num">${hm(x.at)} 到</span>`:""}</span>`).join("")
+    + R.wait.map(s=>`<span><i style="background:#26343e"></i>${esc(s.name)} ？</span>`).join("")
+    + R.fail.map(s=>`<span><s>${esc(s.name)}</s></span>`).join("");
+  const hrsL=Math.max(0,(SUNRISE-T)/60), hTxt=(+hrsL.toFixed(1))+" 小時";
+  const legD = dem.filter(x=>x.v>0.05).map(x=>{ const f = (["一級","二級","三級","門外"].includes(x.label) && hrsL>0) ? `${esc(x.label)} ${+(x.v/hrsL).toFixed(2)} kW × ${hTxt} = ${fmt1(x.v)} 度` : x.label==="沒接住" ? `沒接住（若全接）${fmt1(x.v)} 度` : `${esc(x.label)} ${fmt1(x.v)} 度`; return `<span><i class="${x.cls||""}" style="background:${x.color}"></i>${f}</span>`; }).join("");
+  const unmet = R.unmet.map(n=>`<span>✗ ${n.who==="居家"?"居家":""}${esc(LOADS[n.kind].name)} ${n.miss}</span>`).join("");
+  const hidden = T>=150 && r17At()==null ? `<span class="hid">居家維生使用者 約 20 位・不知道在哪</span>` : "";
+  const tl = R.segs.map(s=>{ const a=s.a, b=s.b, cut=Math.min(Math.max(T,a),b); let h=""; if(cut>a) h+=`<i class="${s.lit?"lit":"off"} past" style="left:${tlPct(a)}%;width:${tlPct(cut)-tlPct(a)}%"></i>`; if(b>cut) h+=`<i class="${s.lit?"lit":"off"}" style="left:${tlPct(cut)}%;width:${tlPct(b)-tlPct(cut)}%"></i>`; return h; }).join("")
+    + R.arr.filter(a=>a.at>T && a.at<SUNRISE).map(a=>`<span class="arr" style="left:${tlPct(a.at)}%" title="${esc(a.name)} ${hm(a.at)}"></span>`).join("")
+    + `<span class="now" style="left:calc(${tlPct(T)}% - 1px)"></span>`;
+  const ticks=[[0,"17:30"],[210,"21:00"],[390,"00:00"],[570,"03:00"],[SUNRISE,"06:00"]].map(([m,l])=>`<span style="left:${tlPct(m)}%">${l}</span>`).join("");
+  return `<div class="bal ${R.ok?"ok":"bad"} ${big?"bigbal":""} ${ov?"preview":""}">${ov?`<div class="pvtag">技術組示範試算・尚未實際套用</div>`:""}
+    <div class="bal-head"><div><div class="verdict" style="color:${color}">${verdict}</div>${d?`<span class="delta" style="color:${d.v>=0?"var(--green)":"var(--red)"}">剛才 ${d.v>=0?"+":"−"}${fmt1(Math.abs(d.v))} 度</span>`:""}</div>
+      <div class="bal-num"><b style="color:${R.diff>=0?"var(--green)":"var(--red)"}">${R.diff>=0?"+":"−"}${fmt1(Math.abs(R.diff))}</b><span>度・供給−需求</span></div></div>
+    ${unmet||hidden?`<div class="unmet">${unmet}${hidden}</div>`:""}
+    <div class="sd">
+      <div class="sd-row"><span class="lbl">供給</span><div class="track">${sup.map(seg).join("")}<span class="mark" style="left:${Math.min(100,R.demTot/max*100)}%"></span></div><span class="val">${fmt1(R.supTot)} 度</span></div>
+      <div class="legend">${legS}</div>
+      <div class="sd-row"><span class="lbl">需求</span><div class="track">${dem.map(seg).join("")}</div><span class="val">${fmt1(R.demTot)} 度</span></div>
+      <div class="legend">${legD}</div>
+    </div>
+    <div style="display:grid;gap:4px"><span class="muted small">目前負載 <b class="num" style="color:var(--fg)">${fmt1(R.kwNow)} kW</b>（每小時用 ${fmt1(R.kwNow)} 度）</span>
+      <div class="tl">${tl}</div><div class="ticks">${ticks}</div></div>
+  </div>`;
+}
+function miniHTML(){
+  if(!D("batt")) return `<div class="mini"><b class="muted">等待抽籤</b><span class="num">供 0 度／需 0 度</span></div>`;
+  const R=run(), color=R.ok?"var(--green)":"var(--red)", miss=R.unmet.reduce((s,n)=>s+n.miss,0);
+  const d=S.delta && Date.now()-S.delta.at<9000 ? S.delta : null;
+  return `<div class="mini" style="border-left-color:${color}"><b style="color:${color}">${R.ok?"撐到日出":R.darkNow?"全黑":hm(R.firstDark)+" 電量耗盡"}</b><span class="num">供 ${fmt1(R.supTot)} 度／需 ${fmt1(R.demTot)} 度</span>${miss?`<span class="bad">沒接住 ${miss}</span>`:""}${d?`<span class="delta" style="color:${d.v>=0?"var(--green)":"var(--red)"}">${d.v>=0?"+":"−"}${fmt1(Math.abs(d.v))}</span>`:""}</div>`;
+}
+function holdHTML(host){
+  const h=heldAt();
+  if(!h && S.ctl?.seg===0) return `<div class="holdbar"><div><b>⏸ 時間停在 17:30</b>・情境引導中</div><div>${host?"宣讀完情境後，按右邊按鈕開始推演，時間才會開始走":"等主持人開始推演"}</div>${host?`<button class="primary" data-act="seg" data-d="1">開始推演（下一段）</button>`:""}</div>`;
+  if(!h) return "";
+  const ws=holdWaits(h);
+  return `<div class="holdbar"><div><b>⏸ 時間停在 ${hm(h.at)}</b>・關卡：${esc(h.name)}</div><div class="row" style="gap:6px 14px">${ws.length? ws.map(([g,t])=>`<span>${gtag(g)} ${esc(t)}</span>`).join("") : `<span class="ok">條件已齊，即將繼續</span>`}</div>${host?`<button data-act="force" data-id="${h.id}">強制解鎖</button>`:""}</div>`;
+}
+function drawChips(){
+  const pools=(S.ctl?.pool||[]).map(x=>{ const c=(x.t==="need"?S.needs:S.supply).find(y=>y.id===x.id); return c? `<span class="chip ${x.t==="need"?"dem":"sup"}"><span class="dim">${x.t==="need"?"需求卡":"供給卡"}</span><b>${esc(poolLabel(x.t,c))}</b></span>` : ""; }).join("");
+  return `<div class="chips">${DRAWS.map(def=>{ const d=D(def.id); return `<span class="chip ${def.side}"><span class="dim">${esc(def.short)}</span>${d?`<b>${esc(d.o.l)}</b>`:`<span class="q">？</span>`}</span>`; }).join("")}${pools}</div>`;
+}
+function syncMini(){ const full=$('[data-live="bal"]'), mini=$('[data-live="mini"]'), hud=$(".hud"); if(full&&mini&&hud) mini.hidden = full.getBoundingClientRect().bottom > hud.getBoundingClientRect().bottom - 30; }
+window.addEventListener("scroll", syncMini, { passive:true });
+function stepsHTML(pp){ return `<div class="steps">${pp.steps.map(s=>`<span class="stp ${s.st}">${s.st==="done"?"✓":s.st==="no"?"✗":s.st==="wait"?"▶":""} ${STEPNAME[s.k]}${s.label&&s.k!=="soc"?"・"+esc(s.label):""}</span>`).join("")}</div>`; }
+
+/* ============================================================
+   引導：每個角色現在該做什麼、在等誰（環環相扣）
+   ============================================================ */
+const qTitle = q => { const sc=SCARDS.find(x=>x.qs.includes(q)); return sc? sc.title : ""; };
+function coachList(g){
+  if(!S.ctl || S.ctl.seg<0 || !GROUPS[g]) return [];
+  const T=simNow(), R=run(), out=[], h=heldAt(), add=(o)=>out.push(o);
+  const qItem=q=>({ low:!q.opts, id:"q-"+q.id, title:"回答"+qTitle(q), text:q.text+(q.opts?"　選一個，再寫下由誰決定、依據為何。":"　寫下你們的看法與依據。"), tab:"dec", target:"q-"+q.id });
+  const qs=qsFor(g).filter(q=>!answered(g,q));
+  if(g==="tech"){
+    if(demoActive()) add({ pop:true, id:"t-demo", title:"上台示範：降到哪一級、能撐多久", text:"打開「示範」頁並按「投影到主螢幕」。點選全開／一級＋二級／只開一級，大家會看到各撐到幾點；再勾選電動車、換電站、移動式儲能，說明哪些 1 小時內接得上、要什麼條件。", tab:"demo", target:"demo" });
+    if(h?.id==="h1" && !Object.values(ST("tech").prop||{}).some(Boolean)) add({ pop:true, id:"t-first", title:"提出第一個電源方案", text:"17:40 的關卡在等你。先挑一個最快接得上的電源（建議店前電動車），選安全條件、現行規則、需要誰同意，按「送出方案」。主持人判定後會交給社會組。", tab:"src", target:"src-R1-2" });
+    allSources().forEach(def=>{ const pp=pipe(def.id);
+      if(pp.ret) add({ pop:true, id:"t-ret-"+def.id+"-"+pp.ret.at, title:`「${def.name}」被${GROUPS[pp.ret.by].name}退回`, text:`${GROUPS[pp.ret.by].name}提問${(pp.ret.tags||[]).length?"［"+pp.ret.tags.join("、")+"］":""}：「${pp.ret.q}」。請回覆並修正條件，送出第 ${pp.ver+1} 版，主持人會重新判定。`, tab:"src", target:"src-"+def.id });
+      else if(pp.steps[1].st==="no") add({ pop:true, id:"t-rev-"+def.id+"-"+pp.v.at, title:`修改「${def.name}」方案`, text:`主持人判定「${def.name}」不可行。請調整安全條件或做法後重新送出，送出後要再判定一次。`, tab:"src", target:"src-"+def.id });
+      else if(!pp.p && !(h?.id==="h1" && def.id==="R1-2") && (demoDone() || T>=LOCK_UNTIL || def.card)) add({ pop:!!def.card, id:"t-prop-"+def.id, title:`提出「${def.name}」方案`, text:`${def.card?"主持人剛抽出這張供給自評表。":""}選${def.method?"放電方式、":""}安全條件、現行規則、需要誰同意，按「送出方案」。`, tab:"src", target:"src-"+def.id, low:!def.card && def.id!=="R1-2" });
+    });
+    const needSat = allSources().some(def=>pipe(def.id).who==="tech" && pipe(def.id).a?.how==="透過門市衛星");
+    if(needSat && satAt()==null) add({ pop:true, id:"t-sat-deliver", title:"治理組在等門市衛星", text:"治理組選擇用門市衛星把授權送到店長手上。請到「通訊資安」啟用門市衛星，授權才送得到、電源才會開始計時。", tab:"sec", target:"sat" });
+    if(satAt()==null && T>=10 && !needSat) add({ id:"t-sat", title:"啟用門市衛星", text:"斷訊中，換電站（用衛星聯絡）、緊急授權書、移動式儲能都要靠衛星才能更早聯絡上。選頻寬分配後啟用。", tab:"sec", target:"sat" });
+  }
+  if((g==="soc"||g==="gov") && demoActive()) add({ info:true, id:g+"-listen", title:"先聽技術組示範", text:`技術組會在主螢幕示範：照現在用電多久會電量耗盡、降到哪一級能撐多久、哪些外部電源 1 小時內接得上。17:40 起輪到你${g==="soc"?"決定營運模式":"回答店長有沒有權自己決定"}。`, tab:"dec", target:"", nopop:true });
+  if(g==="soc"){
+    if(h?.id==="h1" && !ST("soc").answers?.["1A-1"]?.choice) add({ pop:true, id:"s-mode", title:"決定營運模式", text:"17:40 了，總部聯絡不上。選 A 維持營業（一級＋二級）、B 縮減營業（只開一級）或 C 照總部程序，系統會照你的選擇調整用電。三組都完成，時間才會繼續。", tab:"dec", target:"q-1A-1" });
+    if(T>=LOCK_UNTIL && ST("soc").tiers?.[3]!==false && !(h?.id==="h1")) add({ id:"s-tier3", title:"關掉三級設備", text:`冷氣、招牌、咖啡機還開著，約 10.5 kW。照現在用電 ${R.ok?"":hm(R.firstDark)+" 就會電量耗盡"}。到「用電」把三級關掉。`, tab:"power", target:"tier-3" });
+    allSources().forEach(def=>{ const pp=pipe(def.id); if(pp.who==="soc") add({ pop:true, id:"s-use-"+def.id+"-"+pp.v.at, title:`要不要使用「${def.name}」？`, text:`技術組提出了「${def.name}」方案（${(pp.p.safe||[]).join("、")}；${pp.p.rule}），主持人判定「${pp.v.v}」。現在由你決定要不要用；用了以後還要治理組授權，電才會來。有疑問可以「提問／退回技術組修正」。`, tab:"src", target:"src-"+def.id }); });
+    const open=R.unmet.filter(n=>{ const oa=openAt(LOADS[n.kind].scope); return oa!=null && oa<=T; });
+    const lastLog=Math.max(-1,...(ST("soc").log||[]).map(l=>l.t)), newest=Math.max(...open.map(n=>n.at),-1);
+    if(open.length) add({ low: lastLog>=newest, id:"s-serve-"+open.map(n=>n.id).join("-"), title:"門外有人在等", text:`${open.map(n=>`${n.who}・${LOADS[n.kind].name} ${n.miss}`).join("、")}。按＋接住；需求條會變長，看看供給還夠不夠撐到日出。`, tab:"need", target:"need-"+open[0].id });
+    R.arr.filter(a=>a.st==="live" && T-a.at<60).forEach(a=>add({ id:"s-arr-"+a.id, title:`「${a.name}」接上了，+${fmt1(a.kwh)} 度`, text:"電來了。看看供需圖：要不要打開二級、多接住門外需求？還是先留著撐到日出？", tab:"power", target:"tier-2", nopop:true }));
+    if(T>=150 && ST("soc").r17?.at==null) add({ id:"s-r17", title:"派巡守隊找人", text:"走不出家門的製氧機、呼吸器使用者不會自己來，名冊也拿不到。派巡守隊去找，找到的人會出現在「需求」頁。", tab:"src", target:"r17" });
+    if(D("batt") && !R.ok && ST("soc").tiers?.[3]===false && T>=LOCK_UNTIL) add({ id:"s-low", title:`照目前用電，${R.darkNow?"門市已經全黑":hm(R.firstDark)+" 會電量耗盡"}`, text:"可以再關一級，或請技術組提出更多電源。", tab:"power", target:"tier-2", low:true, nopop:true });
+  }
+  if(g==="gov"){
+    if(h?.id==="h1" && !ST("gov").answers?.["1A-3"]?.choice) add({ pop:true, id:"g-1a", title:"店長有權自己決定嗎？", text:"17:40 的關卡在等你。總部聯絡不上時，店長能不能自己決定開放冰箱、接外部電源？選一個，再寫下依據。", tab:"dec", target:"q-1A-3" });
+    allSources().forEach(def=>{ const pp=pipe(def.id); if(false && pp.who==="gov" && pp.a && !pp.a.how) add({ pop:true, id:"g-how-"+def.id+"-"+pp.a.at, title:`「${def.name}」的授權怎麼送到店長手上？`, text:`你已指定由「${pp.a.liab}」負責。斷訊中，授權要送到店長手上電源才會開始計時：用門市衛星要技術組先啟用；派人送書面約 1 小時；也可以先做再說、事後追認，但會記為授權缺口。`, tab:"auth", target:"src-"+def.id }); });
+    allSources().forEach(def=>{ const pp=pipe(def.id); if(pp.who==="gov") add({ pop:true, id:"g-auth-"+def.id+"-"+pp.u.at, title:`授權「${def.name}」`, text:`社會組決定使用「${def.name}」（技術組條件：${(pp.p.safe||[]).join("、")}；需要${(pp.p.who||[]).join("、")}同意）。請在同一張卡上選：① 出事誰負責 ② 授權怎麼送到店長手上，按「授權」。送達後電源才開始計時；按「不授權」就接不上。`, tab:"auth", target:"src-"+def.id }); });
+    if(!ST("gov").mode && h?.id==="h2") add({ pop:true, id:"g-mode", title:"店長能不能開放冰箱、插座？", text:`${h?.id==="h2"?"19:00 的關卡在等你。":"19:00 人潮會湧入。"}選「店長可自行決定」、「須取得緊急授權書」或「不得開放」。沒有你的決定，社會組接不了門外的人。`, tab:"auth", target:"mode" });
+    if(ST("gov").mode?.v===MODES[1] && ST("gov").letter?.at==null) add({ id:"g-letter", title:"簽發緊急授權書", text:"你選了「須取得緊急授權書」。選簽發單位與範圍（冰箱冷藏、插座供電）後按簽發；斷訊中要等門市衛星或 21:00 才送得到。", tab:"auth", target:"letter" });
+    const l=ST("gov").letter; if(ST("gov").mode?.v===MODES[1] && l?.at!=null){ const miss=R.unmet.filter(n=>!(l.scope||[]).includes(LOADS[n.kind].scope)); if(miss.length) add({ id:"g-scope-"+miss.map(n=>n.id).join("-"), title:"授權書範圍不夠", text:`門外的${miss.map(n=>LOADS[n.kind].name).join("、")}需要「${[...new Set(miss.map(n=>LOADS[n.kind].scope))].join("、")}」，授權書沒有涵蓋，社會組接不了。要不要撤回重簽？`, tab:"auth", target:"letter" }); }
+  }
+  qs.forEach(q=>add(qItem(q)));
+  return out.sort((a,b)=>(a.low?1:0)-(b.low?1:0));
+}
+function hostSteps(){
+  const c=S.ctl; if(!c) return [];
+  const T=simNow(), out=[], h=heldAt(), seg=SEGS[c.seg], left=realLeft();
+  const add=o=>out.push(o), btn=(label,attrs,primary=true)=>`<button class="${primary?"primary":""}" ${attrs}>${label}</button>`;
+  if(c.seg<0){ const miss=GKEYS.filter(g=>!S.ops[g]); add(miss.length? { t:`等 ${miss.map(g=>GROUPS[g].name).join("、")} 加入操作手機`, say:"請各組代表打開遊戲網址，選「各組操作手機」，輸入名字並選自己的組。", b:btn("仍然開始",'data-act="seg" data-d="1"',false) } : { t:"三組都到齊：按「開始」", say:"", b:btn("開始",'data-act="seg" data-d="1"') }); return out; }
+  if(c.seg===0 && !c.read) add({ t:"① 宣讀情境", say:"2026 年秋，週一 17:30。高雄全市停電，電話與網路同時中斷，總部聯絡不上。前金區只剩這家全家門市還亮著，今晚附近的人都會走向這裡。", b:btn("宣讀完畢",'data-act="readdone"') });
+  else if(!D("batt")) add({ t:"② 抽「儲能電量」", say:"先來看看：停電那一刻，門市的電池還剩多少？", b:btn("抽籤",'data-act="draw" data-id="batt"') });
+  else if(c.seg===0) add({ t:"③ 開始推演，請技術組上台示範", say:"儲能剩這些電，照現在的用法撐得了多久？接下來請技術組上台示範：降到哪一級、能撐多久，哪些外部電源 1 小時內接得上。", b:btn("開始推演（下一段）",'data-act="seg" data-d="1"') });
+  if(c.seg>=1 && !D("ev")) add({ t:"抽「車主借電」", say:"店門口停著兩台電動車，車主願不願意幫忙？", b:btn("抽籤",'data-act="draw" data-id="ev"') });
+  allSources().forEach(def=>{ const pp=pipe(def.id); if(pp.who==="host") add({ t:`判定「${def.name}」方案`, say:`技術組條件：${(pp.p.safe||[]).join("、")}；${pp.p.rule}；需要${(pp.p.who||[]).join("、")}同意。請依設備、時間、安全、授權判定。`, b:["可行","有條件可行","不可行"].map(v=>btn(v,`data-act="verdict" data-id="${def.id}" data-v="${v}"`,v!=="不可行")).join(" ") }); });
+  if(h && h.id!=="h0"){ const ws=holdWaits(h); if(ws.length) add({ t:`⏸ 關卡「${h.name}」：等 ${ws.map(([g])=>GROUPS[g]?.name||"主持人").join("、")}`, say: h.id==="h1"? "請社會組決定營運模式；技術組先說明哪個電源 1 小時內接得上並送出方案；治理組回答：總部失聯時，店長有權自己決定嗎？" : "人潮要湧進來了。治理組：店長能不能開放冰箱、插座給門外？要不要等授權書？", b:btn("強制解鎖",`data-act="force" data-id="${h.id}"`,false) }); }
+  if(demoActive()) add({ t:"請技術組示範", say:"照現在 15 kW，門市很快就會電量耗盡。請技術組用手機「示範」頁投影到主螢幕：降到哪一級、能撐多久？哪些外部電源 1 小時內接得上？", b:"" });
+  if(passed("h2") && !D("mobile")) add({ t:"抽「移動式儲能」", say:"有人向外求援，移動式儲能什麼時候能來？", b:btn("抽籤",'data-act="draw" data-id="mobile"') });
+  if(T>=150 && !D("walkin")) add({ t:"抽「走進門市的維生需求」", say:"晚上 8 點，門市湧入兩、三百人。看看今晚走進來的有誰。", b:btn("抽籤",'data-act="draw" data-id="walkin"') });
+  if(T>=150 && poolLeft("need").length && !(c.pool||[]).some(x=>x.t==="need")) add({ t:"可抽一張報到需求卡", say:"這是今天報到時大家填的需求，抽一張讓它真的出現在門外。", b:btn("抽一張",'data-act="pooldraw" data-t="need"',false) });
+  if(passed("h2") && poolLeft("sup").length && !(c.pool||[]).some(x=>x.t==="sup")) add({ t:"可抽一張供給自評表", say:"技術組報到時說能提供的資源，抽一張看看今晚能不能來。", b:btn("抽一張",'data-act="pooldraw" data-t="sup"',false) });
+  if(T>=210 && !D("swap")) add({ t:"抽「換電站能否開通」", say:"訊號回來一點了，換電業者聯絡得上嗎？", b:btn("抽籤",'data-act="draw" data-id="swap"') });
+  if(T>=210 && !D("home")) add({ t:"抽「巡守隊找到的居家使用者」", say:"巡守隊在里內找到了多少走不出家門的人？", b:btn("抽籤",'data-act="draw" data-id="home"') });
+  if(c.seg===3 && !(c.injects||[]).includes("1C")) add({ t:"可發備用卡 1-C（網攻）", say:"隔壁門市的逆變器被竄改當機了。技術組，要不要斷線？", b:btn("發出 1-C",'data-act="inject" data-id="1C"',false) });
+  if((c.injects||[]).includes("1C") && !D("attack") && ST("tech").answers?.["1C-1"]?.choice) add({ t:"抽「網攻」", say:"技術組已經決定，現在看網攻有沒有波及示範門市。", b:btn("抽籤",'data-act="draw" data-id="attack"') });
+  if(c.seg===3 && T>=STAGE_END) add({ t:"⑤ 23:30 到了：進入上牆，第一階段結束", say:"第一階段到此結束。請三組準備上牆：社會組讀服務量表、技術組讀技術準備清單、治理組說明哪些授權前提不存在。", b:btn("進入上牆",'data-act="seg" data-d="1"') });
+  else if(c.seg>=1 && c.seg<4 && left===0 && !h) add({ t:`本段時間到：進入「${SEGS[c.seg+1].name}」`, say: c.seg===3? "請三組準備上牆：社會組讀服務量表、技術組讀技術準備清單、治理組說明哪些授權前提不存在。" : "", b:btn("下一段",'data-act="seg" data-d="1"') });
+  { const e=ffTarget(); if(e) add({ t:`空檔：下一件事是 ${e.t}`, say:"目前三組手上的事都做完時，可以直接快轉到下一件事，不用乾等。", b:btn("快轉到 "+hm(e.at),`data-act="ff" data-t="${e.at}"`,false) }); }
+  if(c.seg===3 && c.clash==null) add({ t:"可點交鋒題", say:CLASHES[0], b:btn("顯示交鋒題 1",'data-act="clash" data-i="0"',false) });
+  if(c.seg===4) add({ t:"上牆與匯出", say:"請三組分別讀出：門市服務量表、技術準備清單、哪些授權前提現在不存在。", b:btn("匯出 CSV",'data-act="export" data-f="csv"',false) });
+  return out;
+}
+function waitingFor(g){
+  const w=[];
+  GKEYS.filter(k=>k!==g).forEach(k=>{ const x=coachList(k).find(i=>!i.low); if(x) w.push([k,x.title]); });
+  const hs=hostSteps().find(x=>/^[①②③] |^抽|^判定|^宣讀|^⏸/.test(x.t)); if(hs) w.push(["host",hs.t.replace(/^⏸ |^[①②③] /g,"")]);
+  return w;
+}
+function upcoming(g){
+  const T=simNow(), out=[], add=t=>out.push(t);
+  const soon=allSources().filter(def=>{ const pp=pipe(def.id); return pp.who && pp.who!==g; });
+  if(g==="gov"){ soon.filter(d=>["host","soc"].includes(pipe(d.id).who)).forEach(d=>add(`「${d.name}」：${pipe(d.id).who==="host"?"主持人判定、社會組決定使用":"社會組決定使用"}後，會輪到你指定誰負責`));
+    if(T<10) add("17:40：回答「店長有權自己決定嗎？」"); else if(T<90) add("19:00 人潮湧入：決定能否開放冰箱、插座給門外"); else if(T<150) add("20:00 狀況卡 1-B：要不要指定門市衛星作為基層通報點"); else if(T<210) add("21:00 換電站、居家使用者出現後，可能還要你授權"); else add("核心議題：說明哪些授權前提現在不存在"); }
+  if(g==="soc"){ soon.filter(d=>["host","tech"].includes(pipe(d.id).who)).forEach(d=>add(`「${d.name}」判定通過後，會輪到你決定要不要用`));
+    if(T<10) add("17:40：決定營運模式（關掉三級）"); else if(T<150) add("20:00 人潮與維生需求湧入：接住需求、選排序原則、派巡守隊"); else if(T<210) add("21:00 巡守隊回報走不出家門的人"); else add("核心議題：完成門市服務量表"); }
+  if(g==="tech"){ if(satAt()==null) add("啟用門市衛星：換電站、授權送達、移動式儲能都會用到");
+    if(T<90) add("19:00 後：主持人抽出的供給自評表要提方案"); else if(T<210) add("21:00 換電站開通後，確認放電方案"); else add("核心議題：說明技術準備清單"); }
+  return out;
+}
+function coachHTML(g){
+  if(!S.ctl || S.ctl.seg<0) return "";
+  const op=isOp(g);
+  if(op && S.focus){ if(coachList(g).some(x=>x.id===S.focus)) return ""; S.focus=null; }
+  const list=op? visCoach(g) : [];
+  if(op && !list.length){ const up=upcoming(g), w=waitingFor(g); return `<div class="coachbox idle"><b>✓ 目前沒有要你決定的事</b>${up.length?`<div class="small"><b>接下來：</b>${up.slice(0,2).map(esc).join("；")}</div>`:""}${w.length?`<div class="small muted">現在等：${w.slice(0,3).map(([k,t])=>`${gtag(k)} ${esc(t)}`).join("　")}</div>`:""}</div>`; }
+  if(!op){ const w=waitingFor(g); return `<div class="coachbox idle"><b>${op||g==="obs"?"目前不用操作":"你只能看"}</b>${w.length?`<div class="small">現在等：${w.slice(0,3).map(([k,t])=>`${gtag(k)} ${esc(t)}`).join("　")}</div>`:`<div class="small muted">看主螢幕，參與討論。</div>`}</div>`; }
+  const [top,...rest]=list;
+  return `<div class="coachbox">${(()=>{ const st=myState(g), cur=mainQueue().now; return top.info||st!=="now" ? `<div class="eyebrow" style="color:var(--muted)">接著輪到你・${GROUPS[g].name}${cur.length?`（現在先等 ${cur.map(x=>(GROUPS[x.who]?.name||"主持人")).join("、")}）`:""}</div>` : `<div class="eyebrow" style="color:var(--yellow)">輪到你・${GROUPS[g].name}</div>`; })()}<b class="ct">${esc(top.title)}</b><div class="small">${esc(top.text)}</div>
+    ${top.low?(()=>{ const w=waitingFor(g); return w.length?`<div class="small muted">同時在等：${w.slice(0,3).map(([k,t])=>`${gtag(k)} ${esc(t)}`).join("　")}</div>`:""; })():""}
+    <div class="row"><button class="primary" data-act="coachgo" data-id="${esc(top.id)}" data-tab="${top.tab}" data-target="${top.target||""}">帶我去</button><button class="small" data-act="nopop" style="padding:4px 10px">${ls.get("oasis3-nopop")==="1"?"開啟提示視窗":"關閉提示視窗"}</button>${rest.length?`<span class="small muted">之後還有：${rest.slice(0,3).map(x=>esc(x.title)).join("、")}${rest.length>3?"…":""}</span>`:""}</div></div>`;
+}
+function hostCoachHTML(){
+  let st=hostSteps();
+  const {now}=mainQueue(), others=now.filter(x=>x.who!=="host");
+  if(others.length && !now.some(x=>x.who==="host") && !heldAt()){ const x=others[0], gname=GROUPS[x.who]?.name||""; st=[{ t:`引導${gname}：${x.t}`, say:`現在請${gname}${x.t.replace(/^「/,"處理「")}。`, b:"" }, ...st.filter(y=>!/^抽|^判定/.test(y.t))]; }
+  if(!st.length) return "";
+  const [top,...rest]=st, ffT=ffTarget();
+  return `<div class="coachbox host"><div class="eyebrow" style="color:var(--yellow)">主持人下一步</div><div class="row between" style="align-items:flex-start"><div style="flex:1;min-width:260px"><b class="ct">${esc(top.t)}</b>${top.say?`<div class="say">🎤 ${esc(top.say)}</div>`:""}</div><div class="row">${top.b||""}</div></div>
+    ${rest.length?`<div class="small muted">也可以：${rest.filter(x=>!/^空檔/.test(x.t)).slice(0,4).map(x=>esc(x.t)).join("・")}</div>`:""}
+    ${ffT && !/^空檔/.test(top.t)?`<div class="row small"><span class="muted">⏭ 下一件事：${esc(ffT.t)}　三組都沒事時可以</span><button class="small" data-act="ff" data-t="${ffT.at}">快轉到 ${hm(ffT.at)}</button></div>`:""}</div>`;
+}
+function ackCoach(id){ if(!id) return; S.focus=id; S.seen.add("ack-"+id); S.seen.add("coach-"+id); ls.set("oasis3-seen-"+S.rid, JSON.stringify([...S.seen])); }
+const visCoach = g => coachList(g).filter(x=>!S.seen.has("ack-"+x.id));
+function goCoach(tab,target){
+  if(tab) S.tab=tab; render(); window.scrollTo({top:0});
+  setTimeout(()=>{ const el=target && $(`[data-coach="${target}"]`); if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); el.classList.add("coachpulse"); setTimeout(()=>el.classList.remove("coachpulse"),4500); } },80);
+}
+function checkCoach(){
+  if(S.view!=="play" || !S.me || !isOp(myG()) || S.modalOpen || S.modalQ.length) return;
+  if(ls.get("oasis3-nopop")==="1") return;
+  const now=Date.now();
+  if(now-(S.lastAct||0)<8000 || now-(S.lastPop||0)<45000) return;
+  if(myState(myG())!=="now") return;
+  const top=visCoach(myG()).find(x=>x.pop && !S.seen.has("coach-"+x.id)); if(!top) return;
+  S.lastPop=now;
+  queueStory({ id:"coach-"+top.id, kicker:"輪到你・"+GROUPS[myG()].name, title:top.title, text:top.text, btn:"帶我去", btn2:"稍後", cls:"coach", then:()=>{ ackCoach(top.id); goCoach(top.tab, top.target); } });
+}
+
+/* ---------- 技術組示範：試算「降到哪一級、能撐多久、哪些電源 1 小時內接得上」 ---------- */
+const DEMO_LOADS = [ { k:"123", name:"全開（不降載）", kw:15 }, { k:"12", name:"一級＋二級", kw:4.5 }, { k:"1", name:"只開一級", kw:2 } ];
+const DEMO_SRC = [
+  { k:"ev", name:"店前電動車", lead:"約 30 分鐘", inHour:true, lo:40, hi:70, note:"2 台 V2L，每台約 3 kW；要車主同意、保留回程電量" },
+  { k:"swap", name:"門口換電站", lead:"1～2 小時", inHour:false, lo:31, hi:40, note:"45～50 度扣損耗二至三成；要業者後台開通" },
+  { k:"mobile", name:"移動式儲能", lead:"2～4 小時", inHour:false, lo:50, hi:50, note:"約 50 度；要運送與專人操作" },
+];
+function demoPreview(){
+  const d=demoState(), T=simNow();
+  const tiers = d.load==="123"? {1:true,2:true,3:true} : d.load==="12"? {1:true,2:true,3:false} : {1:true,2:false,3:false};
+  const mid={ ev:{ id:"R1-2", name:"電動車（試算）", color:"#3fd08f", kwh:55, n:2, at:Math.round(T)+30 }, swap:{ id:"R1-3", name:"換電站（試算）", color:"#56d0e4", kwh:35, at:Math.round(T)+90 }, mobile:{ id:"R1-4", name:"移動式儲能（試算）", color:"#b9a2ff", kwh:50, at:Math.round(T)+180 } };
+  return { tiers, extra:d.src.map(k=>mid[k]).filter(Boolean) };
+}
+const previewOn = () => !!S.ctl && S.ctl.seg>=0 && !!D("batt") && (demoState().on || (S.view==="play" && myG()==="tech" && S.tab==="demo"));
+/* 示範是否進行中：抽完儲能、17:40 前、技術組還沒按「示範完成」也還沒送出任何方案 */
+const demoDone = () => ST("tech").demoDone!=null || Object.values(ST("tech").prop||{}).some(Boolean);
+const demoActive = () => !!S.ctl && S.ctl.seg===1 && !!D("batt") && simNow()<LOCK_UNTIL && !heldAt() && !demoDone();
+function demoState(){ const d=ST("tech").demo||{}; return { load:d.load||"1", src:d.src||[], on:!!d.on }; }
+function demoHTML(interactive){
+  const T=simNow(), R=D("batt")? run() : null, d=demoState();
+  const rem = R? Math.max(0, R.cap - R.usedNow) : (S.ctl?.cap||13.5);
+  const add = DEMO_SRC.filter(x=>d.src.includes(x.k)); const lo=add.reduce((a,x)=>a+x.lo,0), hi=add.reduce((a,x)=>a+x.hi,0);
+  const until = (e,kw) => { const m=T+e/kw*60; return m>=SUNRISE? "06:00 以後" : hm(m); };
+  const rows = DEMO_LOADS.map(L=>{ const sel=L.k===d.load, h=rem/L.kw; const pct=Math.min(100,(T+h*60)/SUNRISE*100);
+    return `<div class="dm-row ${sel?"sel":""}" ${interactive?`data-act="demo" data-k="load" data-v="${L.k}" role="button"`:""}><div class="row between"><b>${L.name}</b><span class="num">${L.kw} kW</span></div>
+      <div class="dm-bar"><i style="width:${pct}%"></i></div><div class="small">儲能 ${fmt1(rem)} 度 ÷ ${L.kw} kW ≈ <b>${fmt1(h)} 小時</b>・<span class="${T+h*60>=SUNRISE?"ok":"bad"}">${until(rem,L.kw)} 電量耗盡</span></div></div>`; }).join("");
+  const L=DEMO_LOADS.find(x=>x.k===d.load);
+  const srcRows = DEMO_SRC.map(x=>`<div class="dm-src ${d.src.includes(x.k)?"sel":""}" ${interactive?`data-act="demo" data-k="src" data-v="${x.k}" role="button"`:""}><div class="row between"><b>${d.src.includes(x.k)?"☑":"☐"} ${x.name}</b><span class="pill ${x.inHour?"ok":"warn"}">${x.lead}${x.inHour?"・1 小時內":""}</span></div><div class="small">${x.lo===x.hi?x.lo:x.lo+"～"+x.hi} 度・${esc(x.note)}</div></div>`).join("");
+  const res = add.length ? `<div class="dm-res">${L.name} ＋ ${add.map(x=>x.name).join("＋")}：共 ${fmt1(rem+lo)}${hi!==lo?"～"+fmt1(rem+hi):""} 度 → 可撐到 <b>${until(rem+lo,L.kw)}${until(rem+hi,L.kw)!==until(rem+lo,L.kw)?"～"+until(rem+hi,L.kw):""}</b></div>` : "";
+  return `<div class="panel stack demo" data-coach="demo"><div class="row between"><div><div class="eyebrow" style="color:var(--tech)">技術組示範・試算</div><b style="font-size:17px">降到哪一級、能撐多久？哪些電源 1 小時內接得上？</b></div>
+      ${interactive?`<div class="row"><button class="${d.on?"primary":""}" data-act="demo" data-k="on">${d.on?"主螢幕投影中・按此關閉":"投影到主螢幕"}</button>${demoDone()?`<span class="pill ok">示範已完成</span>`:`<button class="primary" data-act="demodone">示範完成</button>`}</div>`:""}</div>
+    <div class="dm-grid"><div class="stack" style="gap:8px">${rows}</div><div class="stack" style="gap:8px">${srcRows}${res}</div></div>
+    <div class="src">試算用手冊範圍值（圖 5-3、表 5-2）；實際電量以抽籤與流程為準。${interactive?"點選即可切換，示範完到「電源方案」頁送出方案。":""}</div></div>`;
+}
+
+/* ---------- 現在輪到誰（所有畫面共用） ---------- */
+const SLOT_ORDER=["host","soc","tech","gov"];
+/* 全場唯一的進行順序：一次只有一件「現在」的事（關卡時三組同時） */
+function mainQueue(){
+  if(!S.ctl || S.ctl.seg<0) return { now:[], q:[] };
+  const q=[], seen=new Set(), add=(who,t,par)=>{ const k=who+"|"+t; if(t && !seen.has(k)){ seen.add(k); q.push({who,t,par:!!par}); } };
+  const h=heldAt(); if(h) holdWaits(h).forEach(([g,t])=>add(g,t,true));
+  const hs=hostSteps();
+  hs.filter(x=>/^[①②③⑤] /.test(x.t)).forEach(x=>add("host",x.t.replace(/^[①②③⑤] /,"")));
+  if(demoActive()) add("tech","上台示範：降到哪一級、能撐多久");
+  if(S.ctl.seg===0 && D("batt") && !demoDone()) add("tech","準備上台示範（主持人開始推演後）");
+  allSources().forEach(def=>{ const pp=pipe(def.id); if(!pp.who || (pp.who==="tech" && !pp.p)) return;
+    const t = pp.who==="host"? `判定「${def.name}」方案` : pp.who==="soc"? `決定是否使用「${def.name}」` : pp.who==="gov"? `授權「${def.name}」（誰負責、怎麼送達）` : (pp.ret? `回覆${GROUPS[pp.ret.by].name}提問、修正「${def.name}」（第${pp.ver+1}版）` : pp.steps[1].st==="no"? `修改「${def.name}」方案` : "啟用門市衛星（治理組要用來送授權）");
+    add(pp.who,t); });
+  hs.filter(x=>/^抽|^本段時間到/.test(x.t)).forEach(x=>add("host",x.t));
+  ["soc","gov","tech"].forEach(g=>coachList(g).filter(i=>!i.low && !i.nopop && !i.info).forEach(i=>add(g,i.title)));
+  const now = q.some(x=>x.par) ? q.filter(x=>x.par) : q.slice(0,1);
+  return { now, q };
+}
+function turnSlots(){
+  if(!S.ctl || S.ctl.seg<0) return [];
+  const {now,q}=mainQueue();
+  return SLOT_ORDER.map(w=>{ const n=now.find(x=>x.who===w); if(n) return [w,n.t,"now"]; const x=q.find(x=>x.who===w); return x? [w,x.t,"next"] : [w,null,"idle"]; });
+}
+const myState = g => (turnSlots().find(x=>x[0]===g)||[])[2]||"idle";
+const turnList = () => turnSlots().filter(x=>x[2]==="now");
+function turnHTML(me, big){
+  const L=turnSlots(); if(!L.length) return "";
+  return `<div class="turnbar ${big?"big":""}"><span class="tl-h">現在輪到</span>${L.map(([w,t,st])=>`<span class="tchip ${st} ${w===me?"me":""}">${gtag(w)} ${st==="now"? esc(t) : st==="next"? `<span class="dim">接著：</span>${esc(t)}` : "等待中"}${w===me?" <b>（就是你）</b>":""}</span>`).join("")}${S.ctl.seg>=1 && S.ctl.seg<=3 && nextEvent() && !heldAt()? `<span class="tchip next">⏭ 下一件事：${esc(nextEvent().t)}</span>`:""}${S.lastNote?`<span class="lastnote">最新：<span data-live="lastnote">${esc(S.lastNote)}</span></span>`:""}</div>`;
+}
+let turnToastTimer=null;
+function turnToast(html){ const tmp=document.createElement("div"); tmp.innerHTML=html; S.lastNote=tmp.textContent.replace(/\s+/g," ").trim(); document.querySelectorAll('[data-live="lastnote"]').forEach(e=>e.textContent=S.lastNote); let el=$(".turntoast"); if(!el){ el=document.createElement("div"); el.className="turntoast"; el.setAttribute("role","status"); document.body.appendChild(el); } el.innerHTML=html; el.hidden=false; el.classList.remove("in"); void el.offsetWidth; el.classList.add("in"); clearTimeout(turnToastTimer); turnToastTimer=setTimeout(()=>{ el.hidden=true; },5000); }
+function checkTurn(me){
+  // 只在「輪到自己」的新事項出現時提示；主持人有主控台的「主持人下一步」，不另外跳
+  const sl=turnSlots().find(x=>x[0]===me)||[], mine= sl[2]==="now"? sl[1] : null, k=mine? me+"|"+mine : "";
+  S.toasted = S.toasted || new Set();
+  if(me!=="host" && S.turnKey!==undefined && k && k!==S.turnKey && !S.toasted.has(k) && (S.toasted.add(k), true)) turnToast(`<span class="small">輪到你了</span><div>${gtag(me)} ${esc(mine)}</div>`);
+  S.turnKey=k;
+  if(D("batt")){ const R=run(); R.arr.filter(a=>a.st==="live").forEach(a=>{ const id="arr-"+a.id+"-"+a.at; if(!S.seen.has(id)){ S.seen.add(id); ls.set("oasis3-seen-"+S.rid, JSON.stringify([...S.seen])); if(simNow()-a.at<30) turnToast(`<div>⚡ 「${esc(a.name)}」已接入門市，供給 +${fmt1(a.kwh)} 度</div>`); } }); }
+}
+
+/* ---------- 各組手機 ---------- */
+const TABS = {
+  soc:[["power","用電"],["src","電源"],["need","需求"],["dec","決策"]],
+  tech:[["demo","示範"],["src","電源方案"],["sec","通訊資安"],["dec","決策"]],
+  gov:[["auth","授權"],["dec","決策"]],
+  obs:[["flow","流程"]],
+};
+function viewPlay(){
+  if(!S.rid || !S.ctl) return `<div class="landing">${banners()}<h1>進入</h1>${noRun}</div>`;
+  const g=myG(); if(!g) return joinView();
+  const tabs=TABS[g]; if(!tabs.some(t=>t[0]===S.tab)) S.tab=tabs[0][0];
+  const op = g==="obs" || isOp(g);
+  const td = g==="obs"? [] : todo(g);
+  const badge={}; td.forEach(x=>badge[x.tab]=(badge[x.tab]||0)+1);
+  let body;
+  if(S.ctl.seg<0) body=`<div class="panel">等待主持人開始</div>`;
+  else body = ({ power:powerTab, src: g==="tech"? techSrcTab : socSrcTab, need:needTab, dec:decTab, sec:secTab, auth:authTab, flow:flowTab, demo:()=>`<div data-live="demo"></div>` })[S.tab](g);
+  return `<div class="wrap">${banners()}
+    <div class="hud"><span class="clock" data-live="clock">17:30</span><span class="pill" data-live="commpill"></span>
+      ${GKEYS.filter(isOp).length>1 ? GKEYS.filter(isOp).map(k=>`<button class="pill ${k===g?"sel":""}" data-act="switchg" data-g="${k}" style="padding:4px 12px">${GROUPS[k].name}</button>`).join("") : `<span class="pill">${g==="obs"?"觀看":gtag(g)}・${esc(S.me.name)}</span>`}
+      <button class="pill" data-act="leave" style="padding:3px 10px;margin-left:auto">換組／加一組</button>
+      <div data-live="turn" style="width:100%"></div>
+      <div data-live="mini" style="width:100%" hidden></div></div>
+    ${g!=="obs" && !op ? `<div class="ro"><span>目前由 <b>${esc(S.ops[g]?.name||"—")}</b> 操作${GROUPS[g].name}，你只能看。</span><button data-act="takeover">接手操作</button></div>`:""}
+    <div data-live="notices"></div>
+    <div data-live="end"></div>
+    <div data-live="goal"></div>
+    <div data-live="bal"></div>
+    <div data-live="draws"></div>
+    <div data-live="hold"></div>
+    <div data-live="coach"></div>
+    <div class="tabs n${tabs.length}" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${S.tab===k}" class="${S.tab===k?"on":""}" data-act="tab" data-tab="${k}">${l}${badge[k]&&op?`<span class="badge">${badge[k]}</span>`:""}</button>`).join("")}</div>
+    ${body}
+    <div class="row" style="justify-content:center"><button class="small" data-act="leave" style="padding:4px 10px">換組別</button></div>${foot}</div>`;
+}
+function joinView(){
+  return `<div class="landing" style="max-width:620px">${banners()}
+    <h1 style="font-size:clamp(28px,6vw,40px)">選擇你的組別</h1>
+    ${GKEYS.some(isOp)?`<div class="panel stack"><div class="eyebrow">這支裝置已經在操作，點一下直接進入</div><div class="row">${GKEYS.filter(isOp).map(g=>`<button class="primary" data-act="resumeg" data-g="${g}">進入${GROUPS[g].name}</button>`).join("")}</div><span class="small muted">要多扮演一組，在下面選另一組後按「進入」。</span></div>`:""}
+    <form class="panel form" data-form="join">
+      <div class="field"><label for="j-name">名字</label><input id="j-name" maxlength="20" autocomplete="off" value="${esc(S.draft.name||"")}"></div>
+      <div class="stack" style="gap:8px">${GKEYS.map(g=>`<label class="role" style="cursor:pointer;grid-template-columns:auto 1fr;align-items:center;gap:10px"><input type="radio" name="j-group" value="${g}" ${S.draft.jg===g?"checked":""} style="width:auto;margin:0"><span><b class="${GROUPS[g].cls}">${GROUPS[g].name}操作手機</b><br><span class="small muted">${isOp(g)?`<span class="ok">這支裝置已在操作（可切換）</span>`:S.ops[g]?`目前：${esc(S.ops[g].name)}（選了會接手）`:"尚無人操作"}</span></span></label>`).join("")}
+        <label class="role" style="cursor:pointer;grid-template-columns:auto 1fr;align-items:center;gap:10px"><input type="radio" name="j-group" value="obs" ${S.draft.jg==="obs"?"checked":""} style="width:auto;margin:0"><span><b>只看，不操作</b></span></label></div>
+      <div><button class="primary" type="submit"${dis(!S.hasDb,"連不上雲端")}>進入</button></div>
+    </form></div>`;
+}
+const opDis = g => dis(!isOp(g), "只有"+GROUPS[g].name+"的操作手機能按");
+
+/* 社會組 */
+function powerTab(){
+  const T=simNow(), locked=T<LOCK_UNTIL, hrs=Math.max(0,(SUNRISE-T)/60), s=ST("soc");
+  return `<div class="stack">${TIERS.map(t=>{ const on=s.tiers?.[t.t]!==false; return `<div class="card ${on?"on":""}" data-coach="tier-${t.t}">
+    <div class="row between"><h3>${t.name}<span class="muted small" style="font-weight:400">・${t.sub}</span></h3><button class="${on?"primary":""}" data-act="tier" data-t="${t.t}"${locked?dis(true,"17:40 起才能調整"):opDis("soc")}>${on?"開著":"已關"}</button></div>
+    <div class="small">${esc(t.devs)}</div><div class="kw">${t.kw} kW × ${+hrs.toFixed(1)} 小時（到 06:00）= ${fmt1(t.kw*hrs)} 度</div></div>`; }).join("")}</div>`;
+}
+function srcStatusPill(pp){ const a=pp.steps.find(x=>x.k==="arrive"); return a.st==="todo"? "" : `<span class="pill ${a.st==="done"?"ok":a.st==="no"?"bad":"warn"}">${esc(a.label||"")}</span>`; }
+function propSummary(p,id){ if(!p) return ""; const def=allSources().find(s=>s.id===id); return `<div class="small">${def.method?`<b>${esc(p.method)}</b>・`:""}${(p.safe||[]).map(esc).join("、")}｜<span class="${p.rule===RULE[2]?"bad":p.rule===RULE[1]?"warn":"ok"}">${esc(p.rule)}</span>｜同意：${(p.who||[]).map(esc).join("、")}</div>${p.note?`<div class="small muted">${esc(p.note)}</div>`:""}`; }
+function socSrcTab(){
+  const s=ST("soc"), T=simNow();
+  const cards=allSources().map(def=>{ const pp=pipe(def.id);
+    const act = pp.who==="soc" ? `<div class="row"><button class="primary" data-act="use" data-id="${def.id}" data-v="use"${opDis("soc")}>使用</button><button data-act="use" data-id="${def.id}" data-v="no"${opDis("soc")}>不使用</button></div>${retFormHTML("soc",def)}`
+      : (pp.u && !pp.a && pp.u.v==="use") ? `<div class="row"><button data-act="unuse" data-id="${def.id}"${opDis("soc")}>撤回</button></div>`
+      : (pp.u?.v==="no") ? `<div class="row"><button data-act="unuse" data-id="${def.id}"${opDis("soc")}>重新考慮</button></div>` : "";
+    return `<div class="card ${pp.x?.st==="live"?"live":pp.x?.st==="fail"?"fail":""}" data-coach="src-${def.id}"><div class="row between"><h3>${def.id} ${def.name}</h3>${srcStatusPill(pp)}</div>${stepsHTML(pp)}${propSummary(pp.p,def.id)}${threadHTML(def.id)}${act}</div>`; }).join("");
+  const r=s.r17, at=r17At();
+  const r17=`<div class="card ${at!=null&&at<=T?"live":r?.at!=null?"coming":""}" data-coach="r17"><div class="row between"><h3>R1-7 巡守隊與里幹事</h3>${r?.at!=null?`<span class="pill ${at!=null&&at<=T?"ok":"warn"}">${at==null?"衛星未啟用":hm(at)+" 出發找人"}</span>`:""}</div>
+    ${r?.at!=null? `<div class="small">${esc(r.how)}</div><div class="row"><button data-act="r17undo"${opDis("soc")}>撤回</button></div>` :
+    `<div class="opts">${["派店員跑一趟","等里長自己來","透過門市衛星"].map(o=>`<button class="${S.draft.r17===o?"sel":""}" data-act="draft" data-k="r17" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+     <div class="row"><button class="primary" data-act="r17"${S.draft.r17?opDis("soc"):dis(true,"先選聯絡方式")}>派人去找</button></div>`}</div>`;
+  return `<div class="stack"><div class="card live"><div class="row between"><h3>R1-1 門市儲能</h3><span class="pill num">${fmt1(capNow())} 度${D("batt")?"":" ？"}</span></div></div>${cards}${r17}</div>`;
+}
+function needTab(){
+  const T=simNow(), hrs=Math.max(0,(SUNRISE-T)/60), R=run(), s=ST("soc"), list=R.needs.filter(n=>n.at<=T);
+  const card=n=>{ const L=LOADS[n.kind], q=Math.min(n.qty,s.served?.[n.id]||0), miss=n.qty-q, oa=openAt(L.scope), open=oa!=null&&oa<=T, why=open?"":(openWhy(L.scope)||"尚未開放");
+    return `<div class="card ${miss?"need":""}" data-coach="need-${n.id}"><div class="row between"><h3>${esc(L.name)} <span class="muted small" style="font-weight:400">${esc(n.who)}</span></h3><span class="num ${miss?"bad":"ok"}">${q}／${n.qty} ${L.unit}</span></div>
+      ${open?"":`<span class="pill warn" style="justify-self:start">${esc(why)}</span>`}
+      <div class="row between"><span class="kw">每${L.unit} ${L.kw<0.1? (+L.kw.toFixed(3)) : fmt1(L.kw)} kW × ${+hrs.toFixed(1)} 小時 = ${fmt1(L.kw*hrs)} 度</span>
+      <div class="stepper"><button data-act="serve" data-id="${n.id}" data-d="-1" aria-label="減少"${q<=0?dis(true,"已經是 0"):opDis("soc")}>−</button><span class="num">${q}</span><button data-act="serve" data-id="${n.id}" data-d="1" aria-label="增加"${!open?dis(true,why):q>=n.qty?dis(true,"已全部接住"):opDis("soc")}>＋</button></div></div></div>`; };
+  const ph=[];
+  if(!D("walkin")) ph.push(`<div class="card"><div class="row between"><h3 class="muted">走進門市的維生需求</h3><span class="pill">等抽籤</span></div></div>`);
+  if(ST("soc").r17?.at==null) ph.push(`<div class="card" style="border-style:dashed"><div class="row between"><h3 class="muted">居家維生使用者・約 20 位</h3><button data-act="tab" data-tab="src">派 R1-7</button></div></div>`);
+  else if(!D("home")) ph.push(`<div class="card"><div class="row between"><h3 class="muted">巡守隊找到的居家使用者</h3><span class="pill">等抽籤</span></div></div>`);
+  else { const a=r17At(); if(a==null || Math.max(a,D("home").at)>T) ph.push(`<div class="card"><div class="row between"><h3 class="muted">巡守隊找人中</h3><span class="pill warn">${a==null?"衛星未啟用":hm(Math.max(a,D("home").at))}</span></div></div>`); }
+  return `<div class="stack">${list.map(card).join("")}${ph.join("")}</div>`;
+}
+/* 技術組 */
+function techSrcTab(){
+  return `<div class="stack">${allSources().map(def=>{ const pp=pipe(def.id), p=pp.p, editable=!p || pp.steps[1].st==="no" || !!pp.ret;
+    const d=S.draft["p"+def.id] || (p? JSON.parse(JSON.stringify(p)) : { safe:[], who:[] });
+    const form = editable ? `<div class="stack" style="gap:8px">
+      ${def.method?`<div class="q"><span class="small muted">放電方式</span><div class="opts">${def.method.map(o=>`<button class="${d.method===o?"sel":""}" data-act="pdraft" data-id="${def.id}" data-k="method" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>`:""}
+      <div class="q"><span class="small muted">安全條件</span><div class="opts">${SAFE.map(o=>`<button class="${(d.safe||[]).includes(o)?"sel":""}" data-act="pdraft" data-id="${def.id}" data-k="safe" data-multi="1" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>
+      <div class="q"><span class="small muted">現行規則</span><div class="opts">${RULE.map(o=>`<button class="${d.rule===o?"sel":""}" data-act="pdraft" data-id="${def.id}" data-k="rule" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>
+      <div class="q"><span class="small muted">需要誰同意</span><div class="opts">${AGREE.map(o=>`<button class="${(d.who||[]).includes(o)?"sel":""}" data-act="pdraft" data-id="${def.id}" data-k="who" data-multi="1" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>
+      <input data-input="pnote" data-id="${def.id}" placeholder="備註（設備、人力…）" value="${esc(d.note||"")}">
+      ${pp.ret?`<div class="q"><b>回覆${GROUPS[pp.ret.by].name}的提問</b><input data-input="preply" data-id="${def.id}" placeholder="例如：加派 2 名店員夜間輪班看守" value="${esc(S.draft["reply"+def.id]||"")}"></div>`:""}
+      <div class="row"><button class="primary" data-act="propose" data-id="${def.id}"${(def.method&&!d.method)||!(d.safe||[]).length||!d.rule||!(d.who||[]).length?dis(true,"每一項都要選"):opDis("tech")}>${pp.ret?`送出第 ${pp.ver+1} 版（含回覆）`:p?"送出修改":"送出方案"}</button></div></div>`
+      : propSummary(p,def.id);
+    return `<div class="card ${pp.x?.st==="live"?"live":pp.steps[1].st==="no"||pp.ret?"fail":""}" data-coach="src-${def.id}"><div class="row between"><h3>${def.id} ${def.name}</h3>${srcStatusPill(pp)}</div>${stepsHTML(pp)}${threadHTML(def.id)}${form}</div>`; }).join("")}</div>`;
+}
+function secTab(){
+  const t=ST("tech"), T=simNow(), sat=t.sat, off=linkOffAt();
+  const att=D("attack"), hit=outage();
+  return `<div class="stack">
+    <div class="card ${sat?"live":""}" data-coach="sat"><div class="row between"><h3>R1-5 門市衛星</h3>${sat?`<span class="pill ok">${hm(sat.at)} 啟用</span>`:""}</div>
+      ${sat? `<div class="small">${esc(sat.alloc)}</div>` : `<div class="opts">${["通報優先","報平安優先","各半"].map(o=>`<button class="${S.draft.alloc===o?"sel":""}" data-act="draft" data-k="alloc" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+      <div class="row"><button class="primary" data-act="sat"${S.draft.alloc?opDis("tech"):dis(true,"先選頻寬分配")}>啟用・傳回災情</button></div>`}</div>
+    <div class="card ${off!=null?"":"on"}" data-coach="link"><div class="row between"><h3>能源管理系統連線</h3><span class="pill ${off!=null?"warn":"ok"}">${off!=null?hm(off)+" 起暫停":"連線中"}</span></div>
+      <div class="kw">連線：可能被入侵・暫停：外部電源到位 +${LINK_PENALTY} 分鐘</div>
+      <div class="row"><button class="${off==null?"sel":""}" data-act="link" data-v="on"${opDis("tech")}>維持連線</button><button class="${off!=null?"sel":""}" data-act="link" data-v="off"${opDis("tech")}>暫停連線</button></div>
+      ${att?`<div class="small ${hit?"bad":"ok"}">網攻：${esc(att.o.l)}${att.o.hit?(hit?`・門市停擺 ${hm(hit.a)}–${hm(hit.b)}`:"・已斷線，未受影響"):""}</div>`:""}</div>
+  </div>`;
+}
+/* 治理組 */
+function authTab(){
+  const gv=ST("gov"), T=simNow(), m=gv.mode, l=gv.letter;
+  const modeCard=`<div class="card ${m?"live":"coming"}" data-coach="mode"><div class="row between"><h3>開放冰箱、插座給門外</h3>${m?`<span class="pill ok">${hm(m.at)} 決定</span>`:""}</div>
+    <div class="stack" style="gap:6px">${MODES.map(o=>`<button class="opt ${m?.v===o?"sel":""}" data-act="mode" data-v="${esc(o)}"${(!m && T<90)?dis(true,"19:00 人潮湧入時再決定"):opDis("gov")}>${esc(o)}</button>`).join("")}</div>${!m && T<90?`<div class="small muted">19:00 人潮湧入時才決定，時間會停在 19:00 等你。</div>`:""}</div>`;
+  const ld = S.draft.letter || { scope:[] };
+  const letterCard = m?.v===MODES[1] ? `<div class="card ${l?.at!=null?"live":"coming"}" data-coach="letter"><div class="row between"><h3>R1-6 緊急授權書</h3>${l?.at!=null?`<span class="pill ${letterAt()<=T?"ok":"warn"}">${letterAt()<=T?hm(letterAt())+" 送達":hm(letterAt())+" 送達（等通訊）"}</span>`:""}</div>
+    ${l?.at!=null? `<div class="small">${esc(l.by)}簽發・${(l.scope||[]).map(esc).join("、")}</div><div class="row"><button data-act="letterundo"${opDis("gov")}>撤回</button></div>` :
+    `<div class="q"><span class="small muted">誰簽發</span><div class="opts">${["市府","全家總部"].map(o=>`<button class="${ld.by===o?"sel":""}" data-act="ldraft" data-k="by" data-v="${o}">${o}</button>`).join("")}</div></div>
+     <div class="q"><span class="small muted">範圍</span><div class="opts">${SCOPES.map(o=>`<button class="${(ld.scope||[]).includes(o)?"sel":""}" data-act="ldraft" data-k="scope" data-v="${o}">${o}</button>`).join("")}</div></div>
+     <div class="row"><button class="primary" data-act="letter"${!ld.by||!(ld.scope||[]).length?dis(true,"先選簽發單位與範圍"):opDis("gov")}>簽發</button></div>`}</div>` : "";
+  const pend=[], doneL=[];
+  allSources().forEach(def=>{ const pp=pipe(def.id);
+    if(pp.who==="gov"){
+      const dr=S.draft["auth"+def.id]||{};
+      pend.push(`<div class="card coming" data-coach="src-${def.id}"><div class="row between"><h3>授權「${def.name}」</h3><span class="pill warn">輪到你</span></div>
+        ${propSummary(pp.p,def.id)}${threadHTML(def.id)}<div class="small muted">主持人判定：${esc(pp.v?.v||"")}・社會組：決定使用</div>
+        <div class="q"><b>① 出事誰負責？</b><div class="opts">${LIAB.filter(o=>o!=="不授權").map(o=>`<button class="${dr.liab===o?"sel":""}" data-act="adraft" data-id="${def.id}" data-k="liab" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>
+        <div class="q"><b>② 斷訊中，授權怎麼送到店長手上？</b><div class="stack" style="gap:6px">${DELIVER.map(o=>`<button class="opt ${dr.how===o.v?"sel":""}" data-act="adraft" data-id="${def.id}" data-k="how" data-v="${esc(o.v)}"><b>${esc(o.v)}</b><span class="small muted">${esc(o.note)}</span></button>`).join("")}</div></div>
+        <div class="row"><button class="primary" data-act="authgo" data-id="${def.id}"${(!dr.liab||!dr.how)?dis(true,"①②都要選"):opDis("gov")}>授權</button><button data-act="authno" data-id="${def.id}"${opDis("gov")}>不授權</button></div>${retFormHTML("gov",def)}</div>`);
+    } else if(pp.a){
+      const da=deliverAt(pp.a);
+      doneL.push(`<div class="row between small" style="border-bottom:1px dashed var(--line);padding:6px 0"><span>${pp.a.liab==="不授權"?"✗":"✓"} ${def.name}：${esc(pp.a.liab==="不授權"?"不授權":pp.a.liab+"負責・"+(pp.a.how||""))}${da!=null&&pp.a.liab!=="不授權"?`（${hm(da)} 送達）`:pp.a.how==="透過門市衛星"?"（等技術組啟用衛星）":""}</span>${pp.x?.st!=="live"?`<button class="small" data-act="unauth" data-id="${def.id}"${opDis("gov")}>撤回</button>`:""}</div>`);
+    }
+  });
+  const waitSrc=allSources().filter(def=>{ const pp=pipe(def.id); return !pp.a && pp.who && pp.who!=="gov"; }).map(def=>`<span class="pill">${def.name}：等${GROUPS[pipe(def.id).who]?.name||"主持人判定"}</span>`).join(" ");
+  const src = (pend.join("") || `<div class="panel small muted">目前沒有要你授權的電源。${waitSrc?`<div class="row" style="margin-top:6px">${waitSrc}</div>`:""}</div>`) + (doneL.length?`<div class="panel"><div class="eyebrow">已處理</div>${doneL.join("")}</div>`:"");
+  const modeFirst = !m && T>=90;
+  return `<div class="stack">${modeFirst? modeCard+letterCard : ""}<div class="eyebrow">外部電源授權</div>${src}${modeFirst? "" : modeCard+letterCard}</div>`;
+}
+function flowTab(){ return `<div class="panel">${pipeTable(false)}</div>`; }
+/* 決策（狀況卡） */
+function decTab(g){
+  const live=SCARDS.filter(cardReleased).slice().reverse().filter(sc=>sc.qs.some(q=>q.g===g));
+  const cards = live.length? live.map(sc=>`<div class="scard"><header><span class="eyebrow">${esc(sc.title)}</span><h3>${esc(sc.sub)}</h3></header><div class="body">${sc.qs.filter(q=>q.g===g).map(q=>question(g,q)).join("")}</div></div>`).join("")
+    : `<div class="panel muted">17:40 狀況卡 1-A</div>`;
+  const extra = g==="soc"? `<div class="panel stack"><div class="eyebrow">門市服務量表（表 8-3）</div>${serviceTable()}</div>` : g==="tech"? `<div class="panel stack"><div class="eyebrow">技術準備清單</div>${techList()}</div>` : "";
+  return `<div class="stack">${cards}${extra}</div>`;
+}
+function question(g,q){
+  const a=ST(g).answers?.[q.id]||{};
+  return `<div class="q" data-coach="q-${q.id}"><b>${esc(q.text)}</b>
+    ${q.opts?`<div class="stack" style="gap:6px">${q.opts.map(([k,t])=>`<button class="opt ${a.choice===k?"sel":""}" data-act="choose" data-q="${q.id}" data-v="${k}"${opDis(g)}><b>${k}</b><span>${esc(t)}</span></button>`).join("")}</div>`:""}
+    <textarea id="ans-${q.id}" data-input="answer" data-q="${q.id}" placeholder="由誰決定？依據？（按 Enter 送出，Shift＋Enter 換行）"${isOp(g)?"":" readonly"}>${esc(a.text||"")}</textarea>
+    <div class="row"><button class="primary" data-act="sendans" data-q="${q.id}"${opDis(g)}>${a.sent?"更新回答":"送出回答"}</button>${a.sent?`<span class="small ok">✓ 已送出 ${hm(a.sent)}</span>`:a.text?`<span class="small warn">尚未送出</span>`:""}</div>
+    <div class="tags"><span class="dim small">卡在</span>${STUCK.map(t=>`<button class="tg ${(a.tags||[]).includes(t)?"on":""}" data-act="tag" data-q="${q.id}" data-v="${t}"${opDis(g)}>${t}</button>`).join("")}</div></div>`;
+}
+function serviceTable(){
+  const R=run(), T=simNow(), s=ST("soc"), lasts = R.ok? "06:00 以後" : R.darkNow? "現在全黑" : hm(R.firstDark);
+  const src=["儲能",...R.arr.map(a=>a.name+(a.st==="coming"?"（未到）":""))].join("、");
+  const m=ST("gov").mode;
+  const pre=(scope)=>{ const oa=openAt(scope); return m? (m.v===MODES[1]? "授權書"+(oa!=null&&oa<=T?" ✓":" ✗") : m.v===MODES[0]? "店長自行決定" : "不得開放") : "未決定"; };
+  const rows=TIERS.filter(t=>s.tiers?.[t.t]!==false).map(t=>[t.name+"："+t.devs,"門市自用",src,lasts,"—"]);
+  R.needs.filter(n=>n.at<=T).forEach(n=>{ const q=Math.min(n.qty,s.served?.[n.id]||0); rows.push([`${n.who}・${LOADS[n.kind].name}`,`${q}／${n.qty} ${LOADS[n.kind].unit}`,src,q?lasts:"—",pre(LOADS[n.kind].scope)]); });
+  return `<div class="tablewrap"><table><thead><tr><th>設備／對象</th><th>接住</th><th>電從哪裡來</th><th>撐到</th><th>前提</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function techList(){
+  const rows=allSources().map(def=>{ const pp=pipe(def.id), p=pp.p; return [def.id+" "+def.name+(p?.method?"（"+p.method+"）":""), (p?.safe||[]).join("、")||"—", p?.rule||"—", (p?.who||[]).join("、")||"—", pp.v?.v||"—", pp.a? pp.a.liab+(pp.a.how?"・"+pp.a.how:"") : "—", (pp.steps.find(x=>x.k==="arrive").label)||"—"]; });
+  const extraQ=allSources().map(def=>{ const rs=retsOf(def.id,null); return rs.length? `<div class="small">${def.name}：${rs.map(r=>`第${r.ver}版 ${GROUPS[r.by].name}提問「${esc(r.q)}」`).join("；")}</div>`:""; }).join("");
+  return (extraQ?`<div class="stack" style="gap:2px;margin-bottom:6px">${extraQ}</div>`:"")+`<div class="tablewrap"><table><thead><tr><th>解方</th><th>安全條件</th><th>現行規則</th><th>需要誰同意</th><th>判定</th><th>責任歸屬</th><th>到位</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+/* ---------- 流程表（主螢幕、觀看） ---------- */
+function cell(s, host, id){
+  if(s.k==="judge" && s.st==="wait" && host) return `<div class="verdictb">${["可行","有條件可行","不可行"].map(x=>`<button data-act="verdict" data-id="${id}" data-v="${x}">${x}</button>`).join("")}</div>`;
+  const txt = s.st==="done"? "✓ "+(s.label||hm(s.t)) : s.st==="no"? "✗ "+(s.label||"") : s.st==="wait"? (s.label||"等待") : "—";
+  return `<span class="cell ${s.st}">${esc(txt)}</span>`;
+}
+function pipeTable(host){
+  const T=simNow();
+  const rows=allSources().map(def=>{ const pp=pipe(def.id), th=threadHTML(def.id); return `<tr><td>${def.name}${pp.ver>1?` <span class="pill">第${pp.ver}版</span>`:""}</td>${pp.steps.map(s=>`<td>${cell(s,host,def.id)}</td>`).join("")}</tr>${th?`<tr><td></td><td colspan="6">${th}</td></tr>`:""}`; }).join("");
+  const m=ST("gov").mode, la=letterAt(), sat=satAt(), r=ST("soc").r17, ra=r17At();
+  const extra=[
+    ["開放門外", m? (m.v===MODES[1]? (la==null? `<span class="cell wait">等授權書</span>` : la<=T? `<span class="cell done">✓ 授權書 ${hm(la)}</span>` : `<span class="cell wait">授權書 ${hm(la)} 到</span>`) : `<span class="cell ${m.v===MODES[2]?"no":"done"}">${m.v===MODES[2]?"✗ 不得開放":"✓ 店長自行決定"}</span>`) : (T<90? `<span class="cell todo">19:00 決定</span>` : `<span class="cell wait">等治理組</span>`)],
+    ["門市衛星", sat!=null? `<span class="cell done">✓ ${hm(sat)}</span>` : `<span class="cell wait">等技術組</span>`],
+    ["巡守隊", r?.at!=null? (ra==null? `<span class="cell wait">等衛星</span>` : `<span class="cell ${ra<=T?"done":"wait"}">${ra<=T?"✓ ":""}${hm(ra)} 出發</span>`) : `<span class="cell todo">未派</span>`],
+  ].map(([k,v])=>`<tr><td>${k}</td><td colspan="6">${v}</td></tr>`).join("");
+  return `<table class="pipe"><thead><tr><th></th><th>${gtag("tech")} 提案</th><th>判定</th><th>${gtag("soc")} 決定</th><th>${gtag("gov")} 授權</th><th>${gtag("gov")} 送達</th><th>到位</th></tr></thead><tbody>${rows}${extra}</tbody></table>`;
+}
+function groupStat(){
+  return `<div class="grpstat">${GKEYS.map(g=>{ const n=todo(g).length; return `<div style="color:${GROUPS[g].color}"><div class="row between"><b>${GROUPS[g].name}</b><span class="small muted">${esc(S.ops[g]?.name||"未指定")}</span></div><div class="n">${n}</div><div class="small muted">項等待中</div></div>`; }).join("")}</div>`;
+}
+
+/* ---------- 主螢幕 ---------- */
+function viewConsole(){
+  watchRuns();
+  if(!S.rid || !S.ctl) return `${banners()}<div class="landing"><h1>建立場次</h1><div class="row" style="max-width:560px"><input id="newname" value="12/10 正式場" style="flex:1;width:auto"><button class="primary" data-act="create"${dis(S.busy,"建立中")}>${S.busy?"建立中…":"建立場次"}</button></div><a href="#" class="muted small">← 回首頁</a></div>`;
+  const c=S.ctl;
+  if(c.seg<0) return `${banners()}<div class="stack" style="max-width:1100px;margin:0 auto">
+    <div class="row between"><div><div class="eyebrow">主控台・<a href="#" class="muted">回首頁</a></div><h1 style="font-family:var(--f-story);font-size:32px">${esc(c.name)}</h1></div><button class="primary" data-act="seg" data-d="1">開始：第一日 17:30</button></div>
+    ${hostCoachHTML()}
+    <div class="panel stack"><div class="eyebrow">操作手機</div><div class="grpstat">${GKEYS.map(g=>`<div style="color:${GROUPS[g].color}"><b>${GROUPS[g].name}</b><div style="color:var(--fg)">${S.ops[g]? esc(S.ops[g].name) : `<span class="warn">尚未指定</span>`}</div></div>`).join("")}</div></div>
+    <div class="stats"><div class="stat"><div class="n g-gov">${S.needs.filter(n=>n.g==="gov").length}</div><div class="muted small">治理組需求卡</div></div><div class="stat"><div class="n g-soc">${S.needs.filter(n=>n.g==="soc").length}</div><div class="muted small">社會組需求卡</div></div><div class="stat"><div class="n g-tech">${S.supply.length}</div><div class="muted small">供給自評</div></div></div>
+    <div class="panel stack"><div class="eyebrow">門市儲能（R1-1）</div><div class="choicebtns"><button class="${c.cap===13.5?"sel":""}" data-act="cap" data-v="13.5">一套 13.5 度</button><button class="${c.cap===40?"sel":""}" data-act="cap" data-v="40">三套 40 度</button></div></div>
+    <div class="panel stack"><div class="eyebrow">抽籤池（報到卡）</div>${poolEditor()}</div>
+    <div class="stack"><div class="eyebrow">抽籤</div>${drawBoard(false)}</div>
+  </div>${S.drawer?drawer():""}<button class="fab" data-act="drawer">主控</button>`;
+  return `${banners()}
+  <div class="topbar">
+    <div><div class="eyebrow">熔斷行動 · D1 · <a href="#" class="muted">回首頁</a></div><h1 style="font-family:var(--f-story);font-size:26px;font-weight:900">前金區，最後一盞燈</h1></div>
+    <div class="lampbox" data-live="comm"></div>
+    <div class="bigclock"><span class="t" data-live="clock">17:30</span><span class="muted small" data-live="segname"></span></div>
+  </div>
+  <div data-live="turn" style="margin-bottom:12px"></div>
+  <div data-live="notices" style="margin-bottom:12px"></div>
+  <div data-live="end" style="margin-bottom:12px"></div>
+  <div data-live="goal" style="margin-bottom:12px"></div>
+  <div data-live="hcoach" style="margin-bottom:12px"></div>
+  <div data-live="cdemo" style="margin-bottom:12px"></div>
+  <div class="console">
+    <div class="stack"><div data-live="bigbal"></div><div class="panel" data-live="pipe"></div></div>
+    <div class="stack">${drawBoard(true)}<div data-live="grp"></div>
+      ${c.clash!=null?`<div class="panel" style="border-color:var(--yellow)"><div class="eyebrow">交鋒題</div><b class="warn" style="font-size:18px">${esc(CLASHES[c.clash])}</b></div>`:""}
+      <div class="newsbox" data-live="news"></div></div>
+  </div>
+  <button class="fab" data-act="drawer">主控</button>${S.drawer?drawer():""}`;
+}
+function drawBoard(compact){
+  return `<div class="drawgrid ${compact?"compact":""}">${DRAWS.map(def=>{ const d=D(def.id), rolling=S.rolling===def.id;
+    return `<div class="dcard ${def.side} ${rolling?"rolling":""} ${S.flash===def.id?"flash":""}">
+      <div class="row between"><span class="sidetag ${def.side}">${def.side==="sup"?"供給":def.side==="dem"?"需求":"風險"}</span><span class="dim small num">${def.when}</span></div>
+      <b>${esc(def.name)}</b>
+      <div class="res ${!d&&!rolling?"q":""}" data-roll="${def.id}">${rolling? esc(def.opts[0].l) : d? esc(d.o.l) : "？"}</div>
+      ${!d&&!rolling?(drawLock(def.id)?`<span class="small dim">🔒 ${esc(drawLock(def.id))}</span>`:`<button class="primary" data-act="draw" data-id="${def.id}"${dis(!!S.rolling,"正在抽另一支籤")}>抽籤</button>`):""}
+    </div>`; }).join("")}${["need","sup"].map(t=>{ const left=poolLeft(t), last=(S.ctl?.pool||[]).filter(x=>x.t===t).slice(-1)[0], lc=last&&(t==="need"?S.needs:S.supply).find(y=>y.id===last.id), id="pool-"+t, rolling=S.rolling===id, lock=drawLock(id);
+      return `<div class="dcard ${t==="need"?"dem":"sup"} ${rolling?"rolling":""} ${S.flash===id?"flash":""}"><div class="row between"><span class="sidetag ${t==="need"?"dem":"sup"}">${t==="need"?"需求":"供給"}</span><span class="dim small">剩 ${left.length} 張</span></div>
+        <b>${t==="need"?"報到需求卡":"供給自評表"}</b><div class="res ${!lc&&!rolling?"q":""}" data-roll="${id}" style="font-size:${compact?15:18}px">${rolling?"…":lc? esc(poolLabel(t,lc)) : "？"}</div>
+        ${rolling?"":lock?`<span class="small dim">🔒 ${esc(lock)}</span>`:left.length?`<button class="primary" data-act="pooldraw" data-t="${t}"${dis(!!S.rolling,"正在抽另一支籤")}>抽一張</button>`:`<span class="small dim">池內沒有卡</span>`}</div>`; }).join("")}</div>`;
+}
+function doPoolDraw(t){
+  const id="pool-"+t; if(S.rolling) return;
+  const left=poolLeft(t); if(!left.length) return;
+  const pick=left[Math.floor((()=>{ try{ const u=new Uint32Array(1); crypto.getRandomValues(u); return u[0]/4294967296; }catch(e){ return Math.random(); } })()*left.length)];
+  S.rolling=id; render();
+  let k=0; const show=()=>{ const el=$(`[data-roll="${id}"]`); if(el) el.textContent=poolLabel(t,left[(k++)%left.length]); };
+  const iv=setInterval(show,85);
+  const finish=async()=>{ const el=$(`[data-roll="${id}"]`); if(el) el.textContent=poolLabel(t,pick); await ctlUpdate({ pool:[ ...(S.ctl.pool||[]), { t, id:pick.id, at:nowM(), ts:Date.now() } ] }); S.rolling=null; S.flash=id; render(); setTimeout(()=>{ S.flash=null; },1700); };
+  setTimeout(()=>{ clearInterval(iv); let n=0; const slow=()=>{ show(); if(++n<5) setTimeout(slow,140+n*70); else finish(); }; slow(); },1500);
+}
+function poolEditor(){
+  const kinds=Object.entries(LOADS);
+  const nRows=S.needs.map(n=>`<div class="prow"><label class="row" style="gap:6px;flex:1;min-width:220px"><input type="checkbox" data-pool="need" data-id="${n.id}" ${n.pool?"checked":""} style="width:auto;margin:0"><span class="num muted">${esc(n.no)}</span> ${esc(n.need)}</label>
+    <select data-pf="pkind" data-coll="needs" data-id="${n.id}"><option value="">設備…</option>${kinds.map(([k,L])=>`<option value="${k}" ${n.pkind===k?"selected":""}>${L.name}</option>`).join("")}</select>
+    <input type="number" min="1" data-pf="pqty" data-coll="needs" data-id="${n.id}" value="${esc(n.pqty||"")}" placeholder="數量" style="width:80px"><span class="small muted">${LOADS[n.pkind]?.unit||""}</span></div>`).join("") || `<span class="muted small">還沒有需求卡</span>`;
+  const sRows=S.supply.map(c=>`<div class="prow"><label class="row" style="gap:6px;flex:1;min-width:220px"><input type="checkbox" data-pool="sup" data-id="${c.id}" ${c.pool?"checked":""} style="width:auto;margin:0"><span class="num muted">${esc(c.no)}</span> ${esc(c.unit)}</label>
+    <input type="number" min="1" data-pf="pkwh" data-coll="supply" data-id="${c.id}" value="${esc(c.pkwh||"")}" placeholder="度" style="width:80px"><span class="small muted">度</span>
+    <input type="number" min="0" step="10" data-pf="plead" data-coll="supply" data-id="${c.id}" value="${esc(c.plead||"")}" placeholder="60" style="width:80px"><span class="small muted">分鐘到</span></div>`).join("") || `<span class="muted small">還沒有供給自評表</span>`;
+  return `<div class="stack" style="gap:6px"><div class="small muted">需求卡：勾選並填設備與數量才會進池</div>${nRows}<div class="small muted" style="margin-top:8px">供給自評表：勾選並填度數才會進池（未填到位時間以 60 分鐘計）</div>${sRows}</div>`;
+}
+function pickIndex(def){ const ws=def.opts.map(o=>o.w||1), tot=ws.reduce((a,b)=>a+b,0); let r; try{ const u=new Uint32Array(1); crypto.getRandomValues(u); r=u[0]/4294967296*tot; }catch(e){ r=Math.random()*tot; } for(let i=0;i<ws.length;i++){ if(r<ws[i]) return i; r-=ws[i]; } return ws.length-1; }
+function doDraw(id){
+  if(S.rolling || D(id)) return;
+  const def=DRAWS.find(x=>x.id===id), i=pickIndex(def);
+  S.rolling=id; render();
+  let k=0; const show=()=>{ const el=$(`[data-roll="${id}"]`); if(el) el.textContent=def.opts[(k++)%def.opts.length].l; };
+  const iv=setInterval(show,85);
+  const finish=async()=>{ await ctlUpdate({ draws:{ ...(S.ctl.draws||{}), [id]:{ i, at:nowM(), ts:Date.now() } } }); S.rolling=null; S.flash=id; render(); setTimeout(()=>{ S.flash=null; },1700); };
+  setTimeout(()=>{ clearInterval(iv); let n=0; const slow=()=>{ show(); if(++n<5) setTimeout(slow,140+n*70); else finish(); }; slow(); },1500);
+}
+function corrHTML(){
+  const c=S.ctl, corr=c.corr||{}, T=simNow();
+  const rows=allSources().filter(def=>{ const pp=pipe(def.id); return (pp.p && pp.v && pp.v.v!=="不可行") || corr[def.id]; }).map(def=>{ const pp=pipe(def.id), cr=corr[def.id];
+    return `<div class="crow"><div><b>${def.name}</b> <span class="small muted">${pp.p? (pp.p.rule||"")+"・"+(pp.a?.liab||"")+"負責・"+(pp.a?.how||"") : ""}</span>${cr?.void?`<div class="small bad">已判為不成立：${esc(cr.reason)}</div>`:""}</div>
+      ${cr?.void? `<button class="small" data-act="corrundo" data-id="${def.id}">取消修正</button>` : `<div class="row"><input data-input="corrnote" data-id="${def.id}" placeholder="不成立的理由（例：現行法規不允許）" style="flex:1;min-width:160px;width:auto"><button class="small" data-act="corrvoid" data-id="${def.id}">判為不成立</button></div>`}</div>`; }).join("") || `<div class="small muted">目前沒有已接入或已授權的外部電源。</div>`;
+  const m=ST("gov").mode, ov=corr.open;
+  const openRow = m? `<div class="crow"><div><b>開放冰箱、插座給門外</b> <span class="small muted">${esc(m.v)}</span>${ov?.void?`<div class="small bad">已撤銷：${esc(ov.reason)}（門外需求不算接住）</div>`:""}</div>${ov?.void?`<button class="small" data-act="corrundo" data-id="open">取消修正</button>`:`<div class="row"><input data-input="corrnote" data-id="open" placeholder="撤銷理由" style="flex:1;min-width:160px;width:auto"><button class="small" data-act="corrvoid" data-id="open">撤銷開放</button></div>`}</div>` : "";
+  const notes=(c.notices||[]).map(n=>`<div class="small">📢 ${hm(n.at)} ${esc(n.text)}</div>`).join("");
+  return `<div class="stack" style="gap:8px"><div class="small muted">檢視第一階段結果，把不合理的假設判為不成立；門市的供需會依修正後重新計算，並向全場公告。</div>${rows}${openRow}
+    <div class="row"><input data-input="corrnote" data-id="notice" placeholder="其他修正公告（例：換電站離線放電不符現行規定）" style="flex:1;min-width:180px;width:auto"><button class="small" data-act="notice">發布公告</button></div>
+    ${notes?`<div class="stack" style="gap:2px">${notes}</div>`:""}
+    <div class="row"><button class="primary" data-act="baseline">${c.baseline?"重新鎖定修正後結果":"確認修正，鎖定為第二階段起點"}</button>${c.baseline?`<span class="small ok">✓ 已鎖定 ${new Date(c.baseline.ts).toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit"})}</span>`:""}</div></div>`;
+}
+function noticesHTML(){ const n=S.ctl?.notices||[]; if(!n.length) return ""; return `<div class="noticebar"><b>📢 控制組修正公告</b>${n.slice(-3).map(x=>`<div class="small">${esc(x.text)}</div>`).join("")}</div>`; }
+function drawer(){
+  const c=S.ctl, started=c.seg>=0, left=realLeft();
+  return `<aside class="drawer" aria-label="主控面板">
+    <div class="row between"><h2 style="font-size:18px">主控</h2><button data-act="drawer">關閉</button></div>
+    <section><div class="small">目前：<b>${c.seg<0?"前置設定":esc(SEGS[c.seg].name)}</b>${c.pausedAt?"（暫停）":""}${left!=null?`・剩 <span class="num" data-live="hostleft"></span>`:""}</div>
+      <div class="row"><button data-act="seg" data-d="-1"${dis(!started,"還沒開始")}>上一段</button>
+        <button class="primary" data-act="seg" data-d="1"${dis(c.seg>=SEGS.length-1,"最後一段")}>${c.seg<0?"開始":"下一段："+esc(SEGS[c.seg+1]?.name||"—")}</button>
+        <button data-act="pause"${dis(!started,"還沒開始")}>${c.pausedAt?"繼續":"暫停"}</button></div></section>
+    <section><div class="eyebrow">技術判定</div>${allSources().map(def=>{ const pp=pipe(def.id); return `<div class="stack" style="gap:4px"><div class="small">${def.name}${pp.p?"":` <span class="dim">（尚無提案）</span>`}</div>${pp.p?`<div class="verdictb">${["可行","有條件可行","不可行"].map(x=>`<button class="${pp.v?.v===x?"on":""}" data-act="verdict" data-id="${def.id}" data-v="${x}">${x}</button>`).join("")}</div>`:""}</div>`; }).join("")}</section>
+    <section><div class="eyebrow">抽籤池（報到卡）</div>${poolEditor()}</section>
+    <section><div class="eyebrow">回溯修正（控制組）</div>${corrHTML()}</section>
+    <section><div class="eyebrow">重抽</div>${DRAWS.filter(d=>D(d.id)).map(d=>`<div class="row between small"><span>${esc(d.name)}：<b>${esc(D(d.id).o.l)}</b></span><button data-act="undraw" data-id="${d.id}">清除</button></div>`).join("")||`<span class="muted small">尚未抽籤</span>`}</section>
+    <section><div class="eyebrow">備用卡</div>${SCARDS.filter(s=>s.kind==="spare").map(s=>`<button style="text-align:left" data-act="inject" data-id="${s.id}"${dis(!started,"開始後才能發布")}>${(c.injects||[]).includes(s.id)?"✓ ":""}${esc(s.title)}　${esc(s.sub)} <span class="dim small">${esc(s.suggest)}</span></button>`).join("")}</section>
+    <section><div class="eyebrow">交鋒題</div>${CLASHES.map((q,i)=>`<button style="text-align:left;${c.clash===i?"border-color:var(--yellow)":""}" data-act="clash" data-i="${i}">${i+1}. ${esc(q)}</button>`).join("")}
+      <button data-act="clash" data-i="-1"${dis(c.clash==null,"沒有顯示中")}>收起交鋒題</button></section>
+    <section><div class="eyebrow">每個方案最多可退回幾次</div><div class="row">${[1,2,3,99].map(n=>`<button class="${retLimit()===n?"sel":""}" data-act="retlimit" data-v="${n}">${n===99?"不限":n+" 次"}</button>`).join("")}</div></section>
+    <section><div class="eyebrow">儲能容量</div><div class="row"><button class="${c.cap===13.5?"sel":""}" data-act="cap" data-v="13.5">13.5 度</button><button class="${c.cap===40?"sel":""}" data-act="cap" data-v="40">40 度</button></div></section>
+    <section><div class="eyebrow">匯出</div><div class="row"><button data-act="export" data-f="csv">CSV</button><button data-act="export" data-f="json">JSON</button></div></section>
+    <section><div class="eyebrow">場次</div><div class="row"><input id="newname" placeholder="新場次名稱" style="flex:1;width:auto"><button data-act="create"${dis(S.busy,"建立中")}>建立</button></div>
+      ${S.runs.map(r=>`<div class="row between small"><span>${esc(r.name)} <span class="dim num">${new Date(r.createdAt).toLocaleString("zh-TW",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</span></span>${r.id===S.rid?`<span class="ok">使用中</span>`:`<button data-act="switchrun" data-id="${r.id}" data-name="${esc(r.name)}">切換</button>`}</div>`).join("")}</section>
+  </aside>`;
+}
+
+/* ---------- 成果牆 ---------- */
+function viewWall(){
+  if(!S.rid || !S.ctl) return `<div class="landing">${banners()}${noRun}</div>`;
+  const tally={}; GKEYS.forEach(g=>Object.values(ST(g).answers||{}).forEach(a=>(a.tags||[]).forEach(t=>tally[t]=(tally[t]||0)+1)));
+  const recs=SCARDS.filter(cardReleased).flatMap(sc=>sc.qs.map(q=>({ sc, q, a:ST(q.g).answers?.[q.id] })));
+  return `${banners()}<div class="stack">
+    <div class="row between"><div><div class="eyebrow">副螢幕・<a href="#" class="muted">回首頁</a></div><h1 style="font-family:var(--f-story);font-size:26px">成果牆</h1></div><span class="pill num" data-live="clock">17:30</span></div>
+    ${drawChips()}
+    <div class="stats">${STUCK.map(t=>`<div class="stat"><div class="n" style="color:var(--orange)">${tally[t]||0}</div><div class="muted small">卡在${t}</div></div>`).join("")}</div>
+    <div class="console"><div class="stack">
+        ${(S.ctl.notices||[]).length?`<div class="panel stack"><div class="eyebrow">控制組修正紀錄</div>${(S.ctl.notices||[]).map(n=>`<div class="small">${hm(n.at)} ${esc(n.text)}</div>`).join("")}</div>`:""}
+        <div class="panel stack"><div class="eyebrow">技術準備清單</div>${techList()}</div>
+        <div class="panel stack"><div class="eyebrow">門市服務量表（表 8-3）</div>${serviceTable()}</div>
+        <div class="panel stack"><div class="eyebrow">決策紀錄</div>${recs.length?`<div class="tablewrap"><table><thead><tr><th>卡</th><th>組</th><th>題目</th><th>選擇</th><th>由誰決定／依據</th><th>卡在</th></tr></thead><tbody>${recs.map(({sc,q,a})=>`<tr><td>${esc(sc.title.replace(/^.*卡 /,""))}</td><td>${gtag(q.g)}</td><td>${esc(q.text)}</td><td>${esc(a?.choice||"—")}</td><td>${esc(a?.text||"")}</td><td>${esc((a?.tags||[]).join("、"))}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted small">尚無狀況卡。</p>`}</div>
+      </div>
+      <div class="stack"><div class="panel stack"><div class="eyebrow">需求卡</div>${needWall()}</div><div class="panel stack"><div class="eyebrow">供給自評表</div>${supplyList()}</div></div></div></div>`;
+}
+function needWall(){
+  if(!S.needs.length) return `<p class="muted small">還沒有需求卡。</p>`;
+  return `<div class="needlist">${S.needs.slice().sort((a,b)=>(a.tier||9)-(b.tier||9)).map(n=>`<div class="card"><div class="row between"><span><span class="num muted">${esc(n.no)}</span> <span class="tierchip t${n.tier||3}">${["","一級","二級","三級"][n.tier]||"—"}</span> <b>${esc(n.need)}</b></span><span class="small ${GROUPS[n.g]?.cls||""}">${esc(n.unit)}</span></div></div>`).join("")}</div>`;
+}
+function supplyList(){
+  if(!S.supply.length) return `<p class="muted small">還沒有供給自評表。</p>`;
+  return `<div class="needlist">${S.supply.map(s=>`<div class="card"><div class="row between"><span><span class="num muted">${esc(s.no)}</span> <b>${esc(s.unit)}</b></span><span class="small">${(s.provide||[]).join("・")}</span></div><div class="small">${esc(s.scale)}</div><div class="small muted">一小時內：${esc(s.inHour||"—")}${(s.limits||[]).length?"・限制："+s.limits.map(esc).join("、"):""}</div></div>`).join("")}</div>`;
+}
+
+/* ---------- 報到 ---------- */
+function viewCheckin(){
+  const g=S.ciGroup;
+  const head=`<div class="stack" style="gap:4px"><div class="eyebrow">報到・<a href="#" class="muted">回首頁</a></div><h1 style="font-size:28px">${g? (g==="tech"?"供給自評表":"需求卡") : "報到填寫"}</h1></div>`;
+  if(!S.rid||!S.ctl) return `<div class="landing">${banners()}${head}${noRun}</div>`;
+  if(!g) return `<div class="landing">${banners()}${head}<div class="roles">${GKEYS.map(k=>`<button class="role" data-act="cigroup" data-g="${k}"><span class="eyebrow">${k==="tech"?"供給自評表":"需求卡"}</span><b class="${GROUPS[k].cls}">${GROUPS[k].name}</b></button>`).join("")}</div></div>`;
+  const list = g==="tech"? S.supply : S.needs.filter(n=>n.g===g);
+  return `<div style="max-width:720px;margin:0 auto" class="stack">${banners()}${head}
+    <div class="row"><span class="pill ${GROUPS[g].cls}"><i class="dot"></i>${GROUPS[g].name}</span><button data-act="cigroup" data-g="">換分組</button></div>
+    ${g==="tech"? supplyForm() : needForm(g)}
+    <div class="panel stack"><div class="eyebrow">已送出</div>${list.length? `<div class="needlist">${list.map(n=>`<div class="row between"><span><span class="num muted">${esc(n.no)}</span> <b>${esc(g==="tech"?n.unit:n.need)}</b></span><span class="row"><button data-act="editcard" data-id="${n.id}">修改</button><button data-act="delcard" data-id="${n.id}">刪除</button></span></div>`).join("")}</div>` : `<p class="muted small">還沒有。</p>`}</div></div>`;
+}
+const F=id=>$("#"+id);
+function draftOf(kind){ const e=S.edit; if(e&&e.kind===kind) return (kind==="need"?S.needs:S.supply).find(x=>x.id===e.id)||{}; return {}; }
+function needForm(g){
+  const d=draftOf("need"), editing=S.edit?.kind==="need";
+  return `<form class="panel form" data-form="need" data-g="${g}">
+    <div class="field"><label for="n-unit">① 單位</label><input id="n-unit" value="${esc(d.unit||"")}"></div>
+    <div class="field"><label for="n-need">② 最不能沒有的需求</label><input id="n-need" value="${esc(d.need||"")}"></div>
+    <div class="field"><span class="lbl">③ 等級</span><div class="choicebtns">${[[1,"一級"],[2,"二級"],[3,"三級"]].map(([v,l])=>`<label class="pill" style="cursor:pointer;padding:7px 12px"><input type="radio" name="n-tier" value="${v}" ${(d.tier||0)===v?"checked":""} style="width:auto;margin:0"> ${l}</label>`).join("")}</div></div>
+    <div class="field"><label for="n-kwh">④ 每日約需幾度電</label><input id="n-kwh" value="${esc(d.kwh||"")}"></div>
+    <div class="field"><label for="n-ifnot">⑤ 沒有會怎樣</label><input id="n-ifnot" value="${esc(d.ifNot||"")}"></div>
+    <div class="field"><label for="n-now">⑥ 目前靠什麼</label><input id="n-now" value="${esc(d.now||"")}"></div>
+    <div class="row"><button class="primary" type="submit"${dis(!S.hasDb,"連不上雲端")}>${editing?"儲存":"送出"}</button>${editing?`<button type="button" data-act="canceledit">取消</button>`:""}</div></form>`;
+}
+function supplyForm(){
+  const d=draftOf("supply"), editing=S.edit?.kind==="supply";
+  return `<form class="panel form" data-form="supply">
+    <div class="field"><label for="s-unit">① 單位</label><input id="s-unit" value="${esc(d.unit||"")}"></div>
+    <div class="field"><span class="lbl">② 可以提供</span><div class="choicebtns">${["電力","通訊","授權","技術人力"].map(x=>`<label class="pill" style="cursor:pointer;padding:7px 12px"><input type="checkbox" name="s-prov" value="${x}" ${(d.provide||[]).includes(x)?"checked":""} style="width:auto;margin:0"> ${x}</label>`).join("")}</div></div>
+    <div class="field"><label for="s-scale">③ 內容與規模</label><textarea id="s-scale">${esc(d.scale||"")}</textarea></div>
+    <div class="field"><span class="lbl">④ 一小時內到位</span><div class="choicebtns">${["可以","不行","視情況"].map(x=>`<label class="pill" style="cursor:pointer;padding:7px 12px"><input type="radio" name="s-inhour" value="${x}" ${d.inHour===x?"checked":""} style="width:auto;margin:0"> ${x}</label>`).join("")}</div></div>
+    <div class="field"><span class="lbl">⑤ 主要限制</span><div class="choicebtns">${STUCK.map(x=>`<label class="pill" style="cursor:pointer;padding:7px 12px"><input type="checkbox" name="s-lim" value="${x}" ${(d.limits||[]).includes(x)?"checked":""} style="width:auto;margin:0"> ${x}</label>`).join("")}</div></div>
+    <div class="field"><label for="s-need">⑥ 需要哪一組配合</label><input id="s-need" value="${esc(d.needGroup||"")}"></div>
+    <div class="row"><button class="primary" type="submit"${dis(!S.hasDb,"連不上雲端")}>${editing?"儲存":"送出"}</button>${editing?`<button type="button" data-act="canceledit">取消</button>`:""}</div></form>`;
+}
+
+/* ---------- 每秒更新 ---------- */
+function tick(){
+  if(!S.ctl) return;
+  const T=simNow(), c=S.ctl, seg=SEGS[c.seg], red=commRed(T);
+  document.querySelectorAll('[data-live="clock"]').forEach(el=>el.textContent=clockLabel(T));
+  document.querySelectorAll('[data-live="segname"]').forEach(el=>el.textContent= seg? seg.name+(c.pausedAt?"（暫停）":"") : "等待開始");
+  const left=realLeft(), hl=$('[data-live="hostleft"]'); if(hl&&left!=null) hl.textContent=`${String(Math.floor(left/60000)).padStart(2,"0")}:${String(Math.floor(left/1000)%60).padStart(2,"0")}`;
+  document.querySelectorAll('[data-live="comm"]').forEach(el=>el.innerHTML=`<span class="eyebrow">通訊</span><span class="v" style="color:var(--${red?"red":"orange"})"><i class="bulb"></i>${red?"中斷":"有限恢復"}</span>`);
+  document.querySelectorAll('[data-live="commpill"]').forEach(el=>{ el.innerHTML=`<i class="dot"></i>通訊${red?"中斷":"有限"}`; el.style.color=`var(--${red?"red":"orange"})`; });
+  const upd=(sel,html)=>{ const el=$(sel); if(el && el.dataset.k!==html){ el.dataset.k=html; el.innerHTML=html; } };
+  if(S.view==="play" && S.me){
+    upd('[data-live="bal"]', balHTML(false, previewOn()? demoPreview() : undefined));
+    upd('[data-live="mini"]', miniHTML());
+    upd('[data-live="draws"]', drawChips());
+    upd('[data-live="hold"]', holdHTML(false));
+    upd('[data-live="goal"]', S.ctl.seg>=0? goalHTML(false) : "");
+    upd('[data-live="end"]', endHTML(false));
+    upd('[data-live="notices"]', noticesHTML());
+    upd('[data-live="coach"]', coachHTML(myG()));
+    upd('[data-live="turn"]', turnHTML(myG(), false));
+    checkTurn(myG());
+    upd('[data-live="demo"]', demoHTML(isOp("tech")));
+    syncMini();
+    if(T>=LOCK_UNTIL && $('[aria-disabled="true"][data-act="tier"][data-why^="17:40"]')) setTimeout(scheduleRender,0);
+    checkStories();
+    checkCoach();
+  }
+  if(S.view==="console" && c.seg>=0){
+    upd('[data-live="hold"]', holdHTML(true));
+    upd('[data-live="hcoach"]', hostCoachHTML());
+    upd('[data-live="turn"]', turnHTML("host", true));
+    checkTurn("host");
+    upd('[data-live="goal"]', goalHTML(true));
+    upd('[data-live="end"]', endHTML(true));
+    upd('[data-live="notices"]', noticesHTML());
+    upd('[data-live="cdemo"]', demoState().on? demoHTML(false) : "");
+    const h=heldAt(); if(h && !holdWaits(h).length && !S.releasing){ S.releasing=true; release(h).finally(()=>{ S.releasing=false; }); }
+    upd('[data-live="bigbal"]', balHTML(true, previewOn()? demoPreview() : undefined));
+    upd('[data-live="pipe"]', `<div class="eyebrow" style="margin-bottom:4px">外部電源與授權流程</div>${pipeTable(true)}`);
+    upd('[data-live="grp"]', groupStat());
+    const nw=$('[data-live="news"]');
+    if(nw){ const latest=[...EVENTS.filter(e=>T>=e.t).map(e=>({ t:e.t, title:e.title||"背景事件", text:e.text })), ...SCARDS.filter(cardReleased).map(s=>({ t:s.at??T, title:s.title+"　"+s.sub, text:s.story }))].sort((a,b)=>a.t-b.t).pop();
+      const key=latest? latest.title+latest.t : "";
+      if(nw.dataset.key!==key){ nw.dataset.key=key; nw.innerHTML = latest? `<div class="eyebrow" style="color:var(--glow2)">${hm(latest.t)}</div><h2 style="font-family:var(--f-story);font-size:20px">${esc(latest.title)}</h2><div class="text" id="newstext"></div>` : "";
+        const el=$("#newstext"); if(el){ const full=latest.text; let i=0; clearInterval(nw._t); nw._t=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length) clearInterval(nw._t); },40); } }
+    }
+  }
+}
+setInterval(()=>{ if(S.view){ runCache.key=""; tick(); } },1000);
+setInterval(()=>{ if(!S.ctl || !S.view) return; const T=simNow(); document.querySelectorAll('[data-live="clock"]').forEach(el=>el.textContent=clockLabel(T)); document.querySelectorAll('[data-live="countdown"]').forEach(el=>{ const l=STAGE_END-T; el.textContent= l>0? dur(l) : "已結束"; }); },200);
+
+/* ============================================================
+   互動
+   ============================================================ */
+let toastTimer;
+function toast(t){ let el=$(".toast"); if(!el){ el=document.createElement("div"); el.className="toast"; el.setAttribute("role","status"); document.body.appendChild(el); } el.textContent=t; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.hidden=true,3000); }
+const LOCAL=new Set(["rdraft","adraft","resumeg","nopop","coachgo","tab","drawer","cigroup","canceledit","leave","draft","pdraft","ldraft","switchg"]);
+const toggleIn=(arr,v)=>{ const s=new Set(arr||[]); s.has(v)?s.delete(v):s.add(v); return [...s]; };
+document.addEventListener("click", async ev=>{
+  const b=ev.target.closest("[data-act]"); if(!b) return;
+  if(b.getAttribute("aria-disabled")==="true"){ ev.preventDefault(); toast(b.dataset.why||"現在不能按"); return; }
+  const d=b.dataset, act=d.act;
+  if(!dbAPI && !LOCAL.has(act)){ toast("連不上雲端資料庫"); return; }
+  const before=balDiff(), T=nowM(); if(!LOCAL.has(act)) S.lastAct=Date.now();
+  switch(act){
+    case "create": await createRun(($("#newname")?.value||"").trim()); break;
+    case "switchrun": await w(dbAPI.doc("config/current").set({ rid:d.id, name:d.name, at:Date.now() })); toast("已切換到「"+d.name+"」"); break;
+    case "drawer": S.drawer=!S.drawer; render(); break;
+    case "tab": S.tab=d.tab; render(); window.scrollTo({top:0}); break;
+    case "leave": S.draft.name=S.me?.name||S.draft.name; S.me=null; ls.set("oasis3-me-"+S.rid,"null"); try{ sessionStorage.removeItem("oasis3-me-"+S.rid); }catch(e){} render(); break;
+    case "demodone": { const dd=demoState(); dd.on=false; saveSt("tech",{ demoDone:nowM(), demo:dd }); S.tab="src"; toast("示範完成：接著到「電源方案」送出方案"); render(); window.scrollTo({top:0}); break; }
+    case "demo": { const dd=demoState(); if(d.k==="on") dd.on=!dd.on; if(d.k==="load") dd.load=d.v; if(d.k==="src") dd.src=toggleIn(dd.src,d.v); saveSt("tech",{ demo:dd }); runCache.key=""; tick(); break; }
+    case "nopop": ls.set("oasis3-nopop", ls.get("oasis3-nopop")==="1"?"0":"1"); toast(ls.get("oasis3-nopop")==="1"?"已關閉提示視窗，提示仍會顯示在畫面上方":"已開啟提示視窗"); tick(); break;
+    case "coachgo": ackCoach(d.id); goCoach(d.tab, d.target); break;
+    case "resumeg": { const me={ name:S.ops[d.g]?.name||S.draft.name||"", g:d.g }; S.me=me; S.tab=null; S.lastAct=Date.now(); try{ sessionStorage.setItem("oasis3-me-"+S.rid, JSON.stringify(me)); }catch(e){} render(); window.scrollTo({top:0}); break; }
+    case "switchg": { S.lastAct=Date.now(); const me={ ...S.me, g:d.g }; S.me=me; S.tab=null; try{ sessionStorage.setItem("oasis3-me-"+S.rid, JSON.stringify(me)); }catch(e){} render(); window.scrollTo({top:0}); break; }
+    case "takeover": await becomeOp(S.me.name, S.me.g); render(); break;
+    case "cigroup": S.ciGroup=d.g||null; S.edit=null; render(); break;
+    case "canceledit": S.edit=null; render(); break;
+    case "seg": gotoSeg(S.ctl.seg+(+d.d)); break;
+    case "pause": togglePause(); break;
+    case "cap": ctlUpdate({ cap:+d.v }); break;
+    case "corrvoid": { const reason=($(`[data-input="corrnote"][data-id="${d.id}"]`)?.value||"").trim()||"不符現行規定或技術上不可行"; const name = d.id==="open"? "開放冰箱、插座給門外" : (allSources().find(x=>x.id===d.id)?.name||d.id);
+      const text = d.id==="open"? `「${name}」撤銷：${reason}。已接住的門外需求不再計入。` : `「${name}」判為不成立：${reason}。這個電源不再計入供給。`;
+      ctlUpdate({ corr:{ ...(S.ctl.corr||{}), [d.id]:{ void:true, reason, at:nowM(), ts:Date.now() } }, notices:[...(S.ctl.notices||[]), { at:nowM(), ts:Date.now(), text:"控制組修正："+text }] }); break; }
+    case "corrundo": { const name = d.id==="open"? "開放冰箱、插座給門外" : (allSources().find(x=>x.id===d.id)?.name||d.id); ctlUpdate({ corr:{ ...(S.ctl.corr||{}), [d.id]:{ void:false } }, notices:[...(S.ctl.notices||[]), { at:nowM(), ts:Date.now(), text:`控制組修正：取消「${name}」的修正，恢復原結果。` }] }); break; }
+    case "notice": { const t=($(`[data-input="corrnote"][data-id="notice"]`)?.value||"").trim(); if(!t){ toast("請輸入公告內容"); break; } ctlUpdate({ notices:[...(S.ctl.notices||[]), { at:nowM(), ts:Date.now(), text:"控制組公告："+t }] }); break; }
+    case "baseline": { const R=run(); ctlUpdate({ baseline:{ ts:Date.now(), at:nowM(), summary:{ lasts: R.ok?"06:00 以後":hm(R.firstDark), supply:+fmt1(R.supTot), demand:+fmt1(R.demTot), sources:R.arr.filter(a=>a.st==="live").map(a=>a.name), voided:Object.entries(S.ctl.corr||{}).filter(([k,v])=>v.void).map(([k,v])=>k+"："+v.reason), notices:(S.ctl.notices||[]).map(n=>n.text) } }, notices:[...(S.ctl.notices||[]), { at:nowM(), ts:Date.now(), text:"控制組：第一階段修正後結果已鎖定，作為第二階段起點。" }] }); toast("已鎖定"); break; }
+    case "ff": { const c=S.ctl, seg=SEGS[c.seg], span=seg.s1-seg.s0, at=+d.t; if(!(span>0) || at<seg.s0 || at>seg.s1) break; const now=c.pausedAt||Date.now(); ctlUpdate({ segStart: now-(at-seg.s0)/span*seg.real*60000 }); toast("已快轉到 "+hm(at)); break; }
+    case "retlimit": ctlUpdate({ retLimit:+d.v }); break;
+    case "readdone": ctlUpdate({ read:true }); break;
+    case "draw": if(drawLock(d.id)){ toast(drawLock(d.id)); break; } doDraw(d.id); break;
+    case "pooldraw": if(drawLock("pool-"+d.t)){ toast(drawLock("pool-"+d.t)); break; } doPoolDraw(d.t); break;
+    case "force": { const h=HOLDS.find(x=>x.id===d.id); if(h) release(h,true); break; }
+    case "undraw": ctlUpdate({ draws:{ ...(S.ctl.draws||{}), [d.id]:{ i:null } } }); break;
+    case "verdict": { const p=ST("tech").prop?.[d.id]; if(!p) break; const cur=verdictOf(d.id); ctlUpdate({ verdicts:{ ...(S.ctl.verdicts||{}), [d.id]: cur?.v===d.v? null : { v:d.v, at:nowM(), propAt:p.at } } }); break; }
+    case "inject": { const s=new Set(S.ctl.injects||[]); s.has(d.id)?s.delete(d.id):s.add(d.id); ctlUpdate({ injects:[...s] }); break; }
+    case "clash": ctlUpdate({ clash: +d.i<0? null : +d.i }); break;
+    // 草稿（只存在本機，送出才寫入）
+    case "draft": S.draft[d.k]= S.draft[d.k]===d.v? null : d.v; render(); break;
+    case "pdraft": { const k="p"+d.id, cur=S.draft[k] || JSON.parse(JSON.stringify(ST("tech").prop?.[d.id]||{ safe:[], who:[] })); if(d.multi) cur[d.k]=toggleIn(cur[d.k],d.v); else cur[d.k]= cur[d.k]===d.v? null : d.v; S.draft[k]=cur; render(); break; }
+    case "ldraft": { const cur=S.draft.letter||{ scope:[] }; if(d.k==="scope") cur.scope=toggleIn(cur.scope,d.v); else cur.by=cur.by===d.v?null:d.v; S.draft.letter=cur; render(); break; }
+    // 社會組
+    case "tier": { const tiers={1:true,2:true,3:true,...(ST("soc").tiers||{})}; tiers[d.t]= tiers[d.t]===false; writeStore({ tiers }); render(); break; }
+    case "serve": { const n=run().needs.find(x=>x.id===d.id); if(!n) break; const served={...(ST("soc").served||{})}; served[n.id]=Math.max(0,Math.min(n.qty,(served[n.id]||0)+(+d.d))); writeStore({ served }); render(); break; }
+    case "use": saveSt("soc",{ use:{ ...(ST("soc").use||{}), [d.id]:{ v:d.v, at:T, ver:verOf(ST("tech").prop?.[d.id]) } } }); render(); break;
+    case "unuse": { const u={ ...(ST("soc").use||{}) }; u[d.id]=null; saveSt("soc",{ use:u }); render(); break; }
+    case "r17": saveSt("soc",{ r17:{ how:S.draft.r17, at:T } }); S.draft.r17=null; render(); break;
+    case "r17undo": saveSt("soc",{ r17:null }); render(); break;
+    // 技術組
+    case "propose": { const k="p"+d.id, old=ST("tech").prop?.[d.id], dr=S.draft[k] || old; const note=$(`[data-input="pnote"][data-id="${d.id}"]`)?.value||dr.note||""; const dm=demoState(); const pp0=pipe(d.id);
+      const ver = old? (pp0.ret? verOf(old)+1 : verOf(old)) : 1, reply = pp0.ret? ($(`[data-input="preply"][data-id="${d.id}"]`)?.value||S.draft["reply"+d.id]||"") : (old?.reply||"");
+      const hist={ ...(ST("tech").hist||{}) }; if(old && pp0.ret){ const {hist:_h, ...o}=old; hist[d.id]=[...(hist[d.id]||[]), o]; }
+      const np={ ...dr, note, at:T, ver, reply }; delete np.hist;
+      if(saveSt("tech",{ prop:{ ...(ST("tech").prop||{}), [d.id]:np }, hist, demo:{ ...dm, on:false } })){ S.draft["reply"+d.id]=null; S.draft[k]=null; toast("已送出，等判定員判定"); } render(); break; }
+    case "sat": saveSt("tech",{ sat:{ alloc:S.draft.alloc, at:T } }); S.draft.alloc=null; render(); break;
+    case "link": saveSt("tech",{ linkOffAt: d.v==="off" ? (linkOffAt() ?? T) : null }); render(); break;
+    // 治理組
+    case "mode": saveSt("gov",{ mode:{ v:d.v, at:T } }); render(); break;
+    case "letter": saveSt("gov",{ letter:{ ...S.draft.letter, at:T } }); S.draft.letter=null; render(); break;
+    case "letterundo": saveSt("gov",{ letter:null }); render(); break;
+    case "auth": saveSt("gov",{ auth:{ ...(ST("gov").auth||{}), [d.id]:{ liab:d.v, at:T } } }); render(); break;
+    case "rdraft": { const k="r"+d.g+d.id, cur=S.draft[k]||{ tags:[] }; cur.tags=toggleIn(cur.tags,d.v); S.draft[k]=cur; render(); break; }
+    case "retgo": { const g=d.g, k="r"+g+d.id, dr=S.draft[k]||{ tags:[] }, q=($(`[data-input="rq"][data-g="${g}"][data-id="${d.id}"]`)?.value||dr.q||"").trim(); if(!q){ toast("請寫下你的問題"); break; }
+      if(roundsUsed(d.id)>=retLimit()){ toast("已達退回上限"); break; }
+      const ret={ ...(ST(g).ret||{}) }; ret[d.id]=[...(ret[d.id]||[]), { ver:verOf(ST("tech").prop?.[d.id]), at:T, tags:dr.tags||[], q, by:g }];
+      if(saveSt(g,{ ret })){ S.draft[k]=null; toast("已退回技術組"); } render(); break; }
+    case "adraft": { const k="auth"+d.id, cur=S.draft[k]||{}; cur[d.k]=d.v; S.draft[k]=cur; render(); break; }
+    case "authgo": { const dr=S.draft["auth"+d.id]||{}; if(!dr.liab||!dr.how) break; const a={ ...(ST("gov").auth||{}) }; a[d.id]={ liab:dr.liab, at:T, how:dr.how, hAt:T, ver:verOf(ST("tech").prop?.[d.id]) }; if(saveSt("gov",{ auth:a })) S.draft["auth"+d.id]=null; render(); break; }
+    case "authno": { const a={ ...(ST("gov").auth||{}) }; a[d.id]={ liab:"不授權", at:T, ver:verOf(ST("tech").prop?.[d.id]) }; saveSt("gov",{ auth:a }); render(); break; }
+    case "deliver": { const a={ ...(ST("gov").auth||{}) }; a[d.id]={ ...a[d.id], how:d.v, hAt:T }; saveSt("gov",{ auth:a }); render(); break; }
+    case "unauth": { const a={ ...(ST("gov").auth||{}) }; a[d.id]=null; saveSt("gov",{ auth:a }); render(); break; }
+    // 狀況卡
+    case "choose": { const g=myG(), q=SCARDS.flatMap(s=>s.qs).find(x=>x.id===d.q); const cur=ST(g).answers?.[d.q]?.choice, v= cur===d.v? null : d.v;
+      if(!saveAnswer(g,d.q,{ choice:v })) break;
+      if(q.applyTiers && v && v!=="C" && simNow()>=LOCK_UNTIL){ writeStore({ tiers: v==="A"? {1:true,2:true,3:false} : {1:true,2:false,3:false} }); toast(v==="A"?"一級＋二級":"只開一級"); }
+      if(q.link && v){ saveSt("tech",{ linkOffAt: v==="A" ? (linkOffAt() ?? T) : null }); }
+      render(); break; }
+    case "sendans": { const g=myG(), el=$(`#ans-${d.q}`); if(saveAnswer(g,d.q,{ text:el?el.value:"", sent:T })) toast("已送出回答"); render(); break; }
+    case "tag": { const g=myG(); saveAnswer(g,d.q,{ tags:toggleIn(ST(g).answers?.[d.q]?.tags,d.v) }); render(); break; }
+    case "needresult": break;
+    case "editcard": { const isTech=S.supply.some(x=>x.id===d.id); S.edit={ kind:isTech?"supply":"need", id:d.id }; render(); window.scrollTo({top:0,behavior:"smooth"}); break; }
+    case "delcard": confirmTwice(b,()=>{ const isTech=S.supply.some(x=>x.id===d.id); w(dbAPI.doc(P(isTech?"supply":"needs",d.id)).delete()); if(S.edit?.id===d.id) S.edit=null; }); break;
+    case "export": exportData(d.f); break;
+  }
+  runCache.key="";
+  if(["retgo","use","unuse","r17","propose","sat","link","mode","letter","auth","deliver","authgo","authno","choose","sendans","demodone"].includes(act) && S.view==="play" && isOp(myG())){ const g=myG(); setTimeout(()=>{ runCache.key=""; const nx=visCoach(g)[0]; const up=upcoming(g)[0]; turnToast(`<div>✓ 已記錄</div><div class="small">接下來：${esc(nx? nx.title : (up||"看主螢幕，等其他組"))}</div>`); },350); }
+  if(before!=null && !LOCAL.has(act)){ const after=balDiff(); if(after!=null && Math.abs(after-before)>=0.05){ S.delta={ v:after-before, at:Date.now() }; tick(); } }
+});
+function confirmTwice(b,fn){ if(b.dataset.confirm==="1"){ fn(); return; } b.dataset.confirm="1"; const t=b.textContent; b.textContent="確定刪除？"; setTimeout(()=>{ if(b.isConnected){ b.dataset.confirm=""; b.textContent=t; } },3000); }
+document.addEventListener("submit", async ev=>{
+  const f=ev.target.closest("form[data-form]"); if(!f) return; ev.preventDefault();
+  const btn=f.querySelector('[type="submit"]'); if(btn?.getAttribute("aria-disabled")==="true"){ toast(btn.dataset.why); return; }
+  if(!dbAPI){ toast("連不上雲端資料庫"); return; }
+  if(f.dataset.form==="join"){
+    const name=F("j-name").value.trim(), g=f.querySelector('input[name="j-group"]:checked')?.value;
+    if(!name){ toast("請輸入名字"); F("j-name").focus(); return; }
+    if(!g){ toast("請選擇組別"); return; }
+    await becomeOp(name, g); document.activeElement?.blur(); render(); return;
+  }
+  if(f.dataset.form==="need"){
+    const g=f.dataset.g, tier=+(f.querySelector('input[name="n-tier"]:checked')?.value||0);
+    const data={ g, unit:F("n-unit").value.trim(), need:F("n-need").value.trim(), tier, kwh:F("n-kwh").value.trim(), ifNot:F("n-ifnot").value.trim(), now:F("n-now").value.trim() };
+    if(!data.unit||!data.need){ toast("請填寫單位與需求"); return; }
+    if(!tier){ toast("請勾選等級"); return; }
+    if(S.edit){ if(await w(dbAPI.doc(P("needs",S.edit.id)).update(data))){ toast("已儲存"); S.edit=null; } }
+    else { const no=GROUPS[g].prefix+"-"+String(S.needs.filter(n=>n.g===g).length+1).padStart(2,"0"); if(await w(dbAPI.collection(P("needs")).add({ ...data, no, createdAt:Date.now() }))) toast(`已送出 ${no}`); }
+  } else {
+    const data={ unit:F("s-unit").value.trim(), provide:[...f.querySelectorAll('input[name="s-prov"]:checked')].map(x=>x.value), scale:F("s-scale").value.trim(), inHour:f.querySelector('input[name="s-inhour"]:checked')?.value||"", limits:[...f.querySelectorAll('input[name="s-lim"]:checked')].map(x=>x.value), needGroup:F("s-need").value.trim() };
+    if(!data.unit){ toast("請填寫單位"); return; }
+    if(S.edit){ if(await w(dbAPI.doc(P("supply",S.edit.id)).update(data))){ toast("已儲存"); S.edit=null; } }
+    else { const no="T-"+String(S.supply.length+1).padStart(2,"0"); if(await w(dbAPI.collection(P("supply")).add({ ...data, no, createdAt:Date.now() }))) toast(`已送出 ${no}`); }
+  }
+  document.activeElement?.blur(); S.pending=false; f.reset(); render();
+});
+document.addEventListener("keydown", ev=>{
+  const el=ev.target; if(el?.dataset?.input!=="answer" || ev.key!=="Enter" || ev.shiftKey || ev.isComposing || ev.keyCode===229) return;
+  ev.preventDefault(); const btn=$(`[data-act="sendans"][data-q="${el.dataset.q}"]`); if(btn){ el.blur(); setTimeout(()=>btn.click(),0); }
+});
+document.addEventListener("input", ev=>{
+  const el=ev.target, d=el.dataset; if(!d.input) return;
+  if(d.input==="answer" && dbAPI){ const g=myG(); if(isOp(g)) debounced("a"+d.q,()=>saveAnswer(g,d.q,{ text:el.value })); }
+  if(d.input==="rq"){ const k="r"+d.g+d.id; S.draft[k]=S.draft[k]||{ tags:[] }; S.draft[k].q=el.value; }
+  if(d.input==="preply"){ S.draft["reply"+d.id]=el.value; }
+  if(d.input==="pnote"){ const k="p"+d.id; S.draft[k]=S.draft[k]||JSON.parse(JSON.stringify(ST("tech").prop?.[d.id]||{ safe:[], who:[] })); S.draft[k].note=el.value; }
+  if(el.id==="j-name") S.draft.name=el.value;
+  if(el.name==="j-group") S.draft.jg=el.value;
+});
+
+document.addEventListener("change", ev=>{
+  const el=ev.target, d=el.dataset; if(!dbAPI) return;
+  if(d.pool) w(dbAPI.doc(P(d.pool==="need"?"needs":"supply",d.id)).update({ pool:el.checked }));
+  if(d.pf && el.tagName==="SELECT") w(dbAPI.doc(P(d.coll,d.id)).update({ [d.pf]:el.value }));
+  if(d.pf && el.tagName==="INPUT") w(dbAPI.doc(P(d.coll,d.id)).update({ [d.pf]:el.value }));
+});
+
+/* ---------- 匯出 ---------- */
+const csvCell=v=>{ const s=String(v??""); return /[",\n]/.test(s)? `"${s.replace(/"/g,'""')}"` : s; };
+async function exportData(f){
+  let dl=null; try{ dl=window.claude?.use? await window.claude.use("downloads") : null; }catch(e){}
+  if(!dl){ toast("這個檢視無法下載檔案"); return; }
+  const name=(S.ctl?.name||"D1").replace(/[\\/:*?"<>|\s]+/g,"_");
+  let data, filename;
+  if(f==="json"){ data=JSON.stringify({ run:S.rid, control:S.ctl, groups:S.st, operators:S.ops, needCards:S.needs, supply:S.supply, exportedAt:new Date().toISOString() },null,2); filename=`城市能源綠洲演習_${name}.json`; }
+  else {
+    const R=run(), L=[["類別","組別","項目","內容","狀態","由誰決定／依據","卡在","情境時間"]];
+    DRAWS.forEach(def=>{ const d=D(def.id); L.push(["抽籤","",def.name,d?d.o.l:"未抽","","","",d?hm(d.at):""]); });
+    (S.ctl?.pool||[]).forEach(x=>{ const cd=(x.t==="need"?S.needs:S.supply).find(y=>y.id===x.id); if(cd) L.push(["抽籤",x.t==="need"?"需求卡":"供給卡",cd.no,poolLabel(x.t,cd),"","","",hm(x.at)]); });
+    Object.entries(S.ctl?.rel||{}).forEach(([k,v])=>{ const h=HOLDS.find(z=>z.id===k); if(h) L.push(["關卡","",h.name,v==="force"?"主持人強制解鎖":"各組完成","","","",hm(h.at)]); });
+    (S.ctl?.notices||[]).forEach(n=>L.push(["控制組修正","",n.text,"","","","",hm(n.at)]));
+    allSources().forEach(def=>retsOf(def.id,null).forEach(r=>L.push(["退回提問",GROUPS[r.by].name,def.name,`第${r.ver}版：${r.q}`,"","",(r.tags||[]).join("、"),hm(r.at)])));
+    L.push(["結果","","門市",R.ok?"撐到日出":R.darkNow?"全黑":hm(R.firstDark)+" 電量耗盡",`供 ${fmt1(R.supTot)}／需 ${fmt1(R.demTot)}`,"","",hm(R.T)]);
+    allSources().forEach(def=>{ const pp=pipe(def.id), p=pp.p; L.push(["技術準備清單","技術組",def.id+" "+def.name,p?`${p.method?p.method+"｜":""}${(p.safe||[]).join("、")}｜${p.rule}｜同意：${(p.who||[]).join("、")}｜${p.note||""}`:"未提案",`判定：${pp.v?.v||"—"}｜店長：${pp.u?(pp.u.v==="no"?"不使用":"使用"):"—"}｜責任：${pp.a?.liab||"—"}｜${(pp.steps.find(x=>x.k==="arrive").label)||""}`,"","",p?hm(p.at):""]); });
+    const gv=ST("gov"); L.push(["授權","治理組","開放冰箱插座",gv.mode?.v||"未決定",gv.letter?.at!=null?`授權書：${gv.letter.by}｜${(gv.letter.scope||[]).join("、")}`:"","","",gv.mode?hm(gv.mode.at):""]);
+    L.push(["通訊資安","技術組","門市衛星",ST("tech").sat?.alloc||"未啟用","","","",satAt()!=null?hm(satAt()):""]);
+    L.push(["通訊資安","技術組","能源管理系統連線",linkOffAt()!=null?"暫停":"連線",D("attack")?D("attack").o.l:"","","",linkOffAt()!=null?hm(linkOffAt()):""]);
+    R.needs.filter(n=>n.at<=R.T).forEach(n=>L.push(["門外需求","社會組",n.who+"・"+LOADS[n.kind].name,`${Math.min(n.qty,ST("soc").served?.[n.id]||0)}／${n.qty}`,"","","",hm(n.at)]));
+    SCARDS.forEach(sc=>sc.qs.forEach(q=>{ const a=ST(q.g).answers?.[q.id]; if(a) L.push(["狀況卡",GROUPS[q.g].name,q.id,q.text,a.choice||"",a.text||"",(a.tags||[]).join("、"),a.t!=null?hm(a.t):""]); }));
+    (ST("soc").log||[]).forEach(l=>L.push(["用電","社會組","等級",TIERS.filter(t=>l.tiers?.[t.t]!==false).map(t=>t.name).join("＋")||"全關","","","",hm(l.t)]));
+    S.needs.forEach(n=>L.push(["需求卡",GROUPS[n.g]?.name||"",n.no,`${n.unit}｜${n.need}`,["","一級","二級","三級"][n.tier]||"",`${n.kwh}｜${n.ifNot}｜${n.now}`,"",""]));
+    S.supply.forEach(s=>L.push(["供給自評","技術組",s.no,`${s.unit}｜${(s.provide||[]).join("、")}`,`一小時內：${s.inHour}`,s.scale,(s.limits||[]).join("、"),""]));
+    data="﻿"+L.map(r=>r.map(csvCell).join(",")).join("\n"); filename=`城市能源綠洲演習_${name}.csv`;
+  }
+  try{ await dl.save({ filename, data }); toast("已下載"); }catch(e){ if(e.code!=="declined") toast("下載失敗："+(e.code||"錯誤")); }
+}
+
+/* ============================================================
+   啟動
+   ============================================================ */
+function route(){ S.view=location.hash.replace("#",""); if(!["console","wall","play","checkin"].includes(S.view)) S.view=""; S.drawer=false; S.edit=null; render(); }
+window.addEventListener("hashchange",route);
+route();
+(async()=>{
+  let db=null; try{ db=window.claude?.use? await window.claude.use("db") : null; }catch(e){}
+  dbAPI=db; S.hasDb=!!db;
+  if(!db){ S.ready=true; render(); return; }
+  const timer=setTimeout(()=>{ S.stale=true; S.ready=true; render(); },10000);
+  db.doc("config/current").onSnapshot(s=>{
+    clearTimeout(timer); if(!s.metadata?.fromCache) S.stale=false; S.ready=true;
+    const rid=s.exists? s.data().rid : null;
+    if(rid!==S.rid) watchRun(rid); else scheduleRender();
+  }, e=>{ clearTimeout(timer); S.ready=true; S.writeErr="資料連線失敗（"+e.code+"）"; render(); });
+})();
+</script>
+</body></html>
