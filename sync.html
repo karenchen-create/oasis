@@ -825,14 +825,15 @@ function banners(){
   if(S.ctl && S.ctl.v!==3) b+=`<div class="banner">這個場次是舊版建立的，新版無法使用。請到主控台按「主控」→「場次」建立新場次。</div>`;
   return b;
 }
-const noRun=`<div class="panel warn">尚未建立場次。</div>`;
+const WAITMSG="連線中…若超過 10 秒仍未出現場次，請重新整理，或改用 Chrome／Safari 開啟（不要用 LINE 內建瀏覽器）。";
+const noRun=()=>S.ready?`<div class="panel warn">尚未建立場次。請主持人在「主控台」建立。</div>`:`<div class="panel muted">${WAITMSG}</div>`;
 const foot=`<p class="foot">工作坊推演用情境，非全家便利商店官方系統。數據依《城市能源綠洲演習手冊》第十一版估算。</p>`;
 const gtag = g => GROUPS[g] ? `<span class="${GROUPS[g].cls} gpill">${GROUPS[g].name}</span>` : g==="host"? `<span class="warn gpill">主持人</span>` : "";
 
 function viewLanding(){
   return `<div class="landing">${banners()}
     <div class="stack"><div class="eyebrow">URBAN ENERGY OASIS · D1</div><h1>前金區<br>最後一盞燈</h1>
-      ${S.rid? `<p class="muted">場次：<b>${esc(S.ctl?.name||S.rid)}</b></p>` : `<p class="warn">尚未建立場次</p>`}</div>
+      ${S.rid? `<p class="muted">場次：<b>${esc(S.ctl?.name||S.rid)}</b></p>` : (S.ready?`<p class="warn">尚未建立場次</p>`:`<p class="muted">${WAITMSG}</p>`)}</div>
     <div class="roles">
       <a class="role main" href="#play"><span class="eyebrow">各組操作手機</span><b>社會組・技術組・治理組</b></a>
       <a class="role" href="#console"><span class="eyebrow">主螢幕・主持人</span><b>主控台與抽籤</b></a>
@@ -1110,7 +1111,7 @@ const TABS = {
   obs:[["flow","流程"]],
 };
 function viewPlay(){
-  if(!S.rid || !S.ctl) return `<div class="landing">${banners()}<h1>進入</h1>${noRun}</div>`;
+  if(!S.rid || !S.ctl) return `<div class="landing">${banners()}<h1>進入</h1>${noRun()}</div>`;
   const g=myG(); if(!g) return joinView();
   const tabs=TABS[g]; if(!tabs.some(t=>t[0]===S.tab)) S.tab=tabs[0][0];
   const op = g==="obs" || isOp(g);
@@ -1413,7 +1414,7 @@ function drawer(){
 
 /* ---------- 成果牆 ---------- */
 function viewWall(){
-  if(!S.rid || !S.ctl) return `<div class="landing">${banners()}${noRun}</div>`;
+  if(!S.rid || !S.ctl) return `<div class="landing">${banners()}${noRun()}</div>`;
   const tally={}; GKEYS.forEach(g=>Object.values(ST(g).answers||{}).forEach(a=>(a.tags||[]).forEach(t=>tally[t]=(tally[t]||0)+1)));
   const recs=SCARDS.filter(cardReleased).flatMap(sc=>sc.qs.map(q=>({ sc, q, a:ST(q.g).answers?.[q.id] })));
   return `${banners()}<div class="stack">
@@ -1441,7 +1442,7 @@ function supplyList(){
 function viewCheckin(){
   const g=S.ciGroup;
   const head=`<div class="stack" style="gap:4px"><div class="eyebrow">報到・<a href="#" class="muted">回首頁</a></div><h1 style="font-size:28px">${g? (g==="tech"?"供給自評表":"需求卡") : "報到填寫"}</h1></div>`;
-  if(!S.rid||!S.ctl) return `<div class="landing">${banners()}${head}${noRun}</div>`;
+  if(!S.rid||!S.ctl) return `<div class="landing">${banners()}${head}${noRun()}</div>`;
   if(!g) return `<div class="landing">${banners()}${head}<div class="roles">${GKEYS.map(k=>`<button class="role" data-act="cigroup" data-g="${k}"><span class="eyebrow">${k==="tech"?"供給自評表":"需求卡"}</span><b class="${GROUPS[k].cls}">${GROUPS[k].name}</b></button>`).join("")}</div></div>`;
   const list = g==="tech"? S.supply : S.needs.filter(n=>n.g===g);
   return `<div style="max-width:720px;margin:0 auto" class="stack">${banners()}${head}
